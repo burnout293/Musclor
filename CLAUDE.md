@@ -2,18 +2,22 @@
 
 Appli web (PWA) de suivi de musculation, installée sur iPhone depuis l'écran d'accueil, hébergée sur **GitHub Pages**. Ce fichier contient tout le nécessaire pour continuer à la faire évoluer depuis n'importe quel compte Claude / session Claude Code. Dans Claude Code, ce fichier (`CLAUDE.md`) est lu automatiquement ; ailleurs, colle-le en début de conversation.
 
-Langue de l'interface : **français**. Version actuelle : **1.3.0**.
+Langue de l'interface : **français**. Version actuelle : **1.4.0**.
 
 ---
 
 ## 1. Ce que fait l'appli
 
-Saisir ses séances de musculation et suivre sa progression. 4 onglets (barre de navigation en bas) :
+Saisir ses séances de musculation et suivre sa progression. 4 onglets (barre de navigation en bas) : **Séance, Calendrier, Courbes, Réglages** (depuis la 1.4.0 ; l'ancien onglet Exercices est rangé dans Réglages).
 
-- **Séance** : formulaire de saisie (date, exercice, charge sur un disque avec +/−, séries, répétitions, commentaire) + historique. L'exercice se choisit dans une **liste maison** avec la pastille de couleur (A-Z) : la liste native d'iOS n'affiche pas de couleur, donc le `<select id="f-ex">` reste mais caché, comme simple porteur de la valeur (`onExChange` met le bouton à jour). Sous le disque, le bouton **« Reprendre »** remplit charge, séries et répétitions avec la dernière séance de l'exercice. Badge **RECORD** sur une séance qui bat le meilleur résultat des dates précédentes du même exercice (`recordIds`, la toute première séance n'en a pas). Éditer ✏️ ou supprimer 🗑️ chaque séance : la suppression est **immédiate**, avec un message « Annuler » pendant 5 s (`toast(msg, undoFn)`) ; supprimer un exercice ou tout l'historique garde la confirmation.
-- **Calendrier** : vue par mois (lundi en premier). Les jours avec séance sont en rouge, avec un point par exercice fait ce jour-là à sa couleur (4 au plus). Toucher un jour → détail de la journée + bouton Retour, avec un tri **A-Z / Chrono / Couleur** mémorisé pour toutes les dates. Chrono = ordre de saisie (l'`id` commence par l'horodatage en base 36) ; Couleur = ordre de la palette (`hueKey` : teinte, rouge en tête, gris à la fin).
+Vocabulaire depuis la 1.4.0 : une **séance** = une journée d'entraînement, d'un **type de séance** (Push, Pull, Jambes… : nom + couleur) ; elle regroupe plusieurs **exercices** (les lignes de `entries`). L'interface dit « exercice ajouté / supprimé » pour une ligne.
+
+- **Séance** : formulaire de saisie (date, type de séance, exercice, charge sur un disque avec +/−, séries, répétitions, commentaire) + historique. Le **type de séance** se choisit à côté de la date ; il appartient à la date et s'enregistre **aussitôt** (`setDayType`), sans attendre la validation d'un exercice. L'exercice se choisit dans une **liste maison** avec la pastille de couleur (A-Z) : la liste native d'iOS n'affiche pas de couleur, donc le `<select id="f-ex">` reste mais caché, comme simple porteur de la valeur (`onExChange` met le bouton à jour). Sous le disque, le bouton **« Reprendre »** remplit charge, séries et répétitions avec la dernière séance de l'exercice. Badge **RECORD** sur une séance qui bat le meilleur résultat des dates précédentes du même exercice (`recordIds`, la toute première séance n'en a pas). Éditer ✏️ ou supprimer 🗑️ chaque séance : la suppression est **immédiate**, avec un message « Annuler » pendant 5 s (`toast(msg, undoFn)`) ; supprimer un exercice ou tout l'historique garde la confirmation.
+- **Calendrier** : vue par mois (lundi en premier). Chaque jour de séance est **entièrement coloré par son type** (rouge sans type ; chiffre foncé sur les couleurs claires, `inkFor`), avec une légende des types du mois. Toucher un jour → détail de la journée + bouton Retour, avec le choix du type de séance (pour typer après coup) et un tri **A-Z / Chrono / Couleur** mémorisé pour toutes les dates. Chrono = ordre de saisie (l'`id` commence par l'horodatage en base 36) ; Couleur = ordre de la palette (`hueKey` : teinte, rouge en tête, gris à la fin).
 - **Courbes** : **toutes** les courbes à la fois, une carte par exercice ayant des séances (meilleure valeur par séance, courbe lumineuse à la couleur de l'exercice). Graduations rondes (`niceScale` : 6 au plus) ; toucher un point affiche « date · valeur », le toucher à nouveau la masque. Bouton **Filtrer** (cases à cocher, Tout afficher / Tout masquer) et bouton **Trier** (A-Z, Récent = dernière séance d'abord, Personnalisé = ordre réglé avec des flèches). Les deux panneaux s'ouvrent dans la carte d'en-tête, un seul à la fois.
-- **Exercices** : catalogue. Chaque exercice a un **groupe de muscle**, une **unité** et une **couleur** propres (11 pastilles + une couleur libre via le sélecteur natif). Créer, éditer (se répercute sur les séances liées), supprimer. La liste « Mes exercices » est **triée par couleur** (`byColor`), puis par nom.
+- **Réglages** : un menu (une ligne par rubrique, place prévue pour d'autres), chaque rubrique ouvre sa page avec un retour « ‹ Réglages » (`showSettingsView`, `openSettings`) :
+  - **Types d'exercices** (l'ancien onglet Exercices) : chaque exercice a un **groupe de muscle**, une **unité** et une **couleur** propres (11 pastilles + une couleur libre via le sélecteur natif). Créer, éditer (se répercute sur les séances liées), supprimer. La liste « Mes exercices » est **triée par couleur** (`byColor`), puis par nom.
+  - **Types de séances** : nom + couleur (même composant de pastilles, `makeSwatches`). Créer, éditer, supprimer ; supprimer un type retire le type des jours concernés mais garde leurs exercices.
 
 Particularités métier :
 - L'unité dépend de l'exercice : `kg`, `%`, `min`, `s`, `km`, `niv`, ou libre. Les valeurs **négatives** sont permises (ex. tractions assistées −27 kg).
@@ -57,11 +61,13 @@ Déploiement = **écraser les fichiers** (pas une release). Une release seule ne
 
 ## 4. Données (localStorage, sur l'appareil)
 
-Clé : **`suivi-muscu-v2`**. Ne **jamais** changer cette clé sans écrire une migration : ça effacerait l'historique des utilisateurs. (Il existe déjà une migration `v1` → `v2`.) Autres clés, propres à l'appareil et hors sauvegarde : `musclor-tab` (dernier onglet ouvert), `musclor-tri-jour` (`"az"|"chrono"|"color"`) et `musclor-courbes` (`{ sort: "az"|"recent"|"custom", hidden: [exId], order: [exId] }`).
+Clé : **`suivi-muscu-v2`**. Ne **jamais** changer cette clé sans écrire une migration : ça effacerait l'historique des utilisateurs. (Il existe déjà une migration `v1` → `v2`.) Autres clés, propres à l'appareil et hors sauvegarde : `musclor-tab` (dernier onglet ouvert ; l'ancienne valeur `"exercices"` mène à Réglages), `musclor-tri-jour` (`"az"|"chrono"|"color"`) et `musclor-courbes` (`{ sort: "az"|"recent"|"custom", hidden: [exId], order: [exId] }`).
 
 ```js
 data = {
   catalog: [ { id, name, groupe, unite, color:"#rrggbb" } ],
+  sessionTypes: [ { id, name, color:"#rrggbb" } ],          // 1.4.0
+  dayTypes: { "YYYY-MM-DD": sessionTypeId },                // 1.4.0 : un type par jour
   entries: [ { id, date:"YYYY-MM-DD", exId, name, groupe, unite,
                series:Number, reps:Number, valeur:Number, comment:String } ],
   seeded: Boolean   // true tant que ce sont les données d'exemple
@@ -70,7 +76,9 @@ data = {
 
 `entries` dénormalise `name/groupe/unite` (copie au moment de la saisie) pour que l'historique survive à la suppression/édition d'un exercice du catalogue ; éditer un exercice répercute ces champs sur ses séances. `exId` relie une séance à son exercice. La **couleur n'est pas dénormalisée** : elle se lit dans le catalogue (`exColor(exId)`, rouge par défaut).
 
-Migration des couleurs (`ensureColors`, au chargement et à l'import) : un exercice sans `color` reprend l'ancienne couleur de son groupe (`LEGACY_GROUP_COLORS`, celles d'avant la 1.2.0), sinon la première couleur libre de `PALETTE`.
+`dayTypes` peut garder une date sans exercice (type choisi puis rien saisi) : c'est sans effet, le calendrier ne montre que les jours avec exercices. « Effacer » l'historique vide aussi `dayTypes`. L'import recopie `sessionTypes` et `dayTypes` s'ils existent.
+
+Mise en forme des données (`ensureShape`, au chargement et à l'import) : crée `sessionTypes` / `dayTypes` absents (données d'avant la 1.4.0) et complète les couleurs manquantes. Migration des couleurs d'exercice : un exercice sans `color` reprend l'ancienne couleur de son groupe (`LEGACY_GROUP_COLORS`, celles d'avant la 1.2.0), sinon la première couleur libre de `PALETTE`.
 
 **Sauvegarde** : boutons Exporter/Importer (JSON = l'objet `data` entier). Les données sont **par appareil**, jamais synchronisées (pas de serveur). `navigator.storage.persist()` est demandé pour limiter les purges.
 

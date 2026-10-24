@@ -151,13 +151,27 @@
   .cal-cell { aspect-ratio: 1 / 1; border-radius: 10px; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; color: var(--muted) }
   .cal-cell.cur { color: var(--fg); background: var(--surface-2); border-color: var(--line) }
   .cal-cell.today { border-color: var(--accent) }
-  button.cal-cell { cursor: pointer; color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: var(--glow); flex-direction: column; gap: 3px; line-height: 1; padding: 0; min-width: 0 }
-  /* Un point par exercice fait ce jour-là, à sa couleur (cerclé de sombre pour rester visible sur le rouge) */
-  .cal-dots { display: flex; gap: 2px; justify-content: center; max-width: 100% }
-  .cal-dots i { width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--d); box-shadow: 0 0 0 1.5px #3a0306 }
+  /* Jour de séance : toute la case prend la couleur du type de séance (--day), rouge sans type */
+  button.cal-cell { cursor: pointer; color: var(--day-ink, #fff); background: var(--day, var(--accent)); border-color: var(--day, var(--accent)); box-shadow: 0 0 14px -2px var(--day, var(--accent)); padding: 0; min-width: 0 }
+  button.cal-cell.today { box-shadow: inset 0 0 0 2px var(--bg), 0 0 14px -2px var(--day, var(--accent)) }
+  .cal-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .78rem; color: var(--muted) }
+  .cal-legend span { display: inline-flex; align-items: center; gap: 6px }
+  .cal-legend i { width: 11px; height: 11px; border-radius: 3px; background: var(--d) }
+  .cal-legend b { color: var(--fg) }
   .day-head { display: flex; align-items: center; gap: 10px }
   .back-btn { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--line); color: var(--fg); border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: 14px; cursor: pointer }
   .day-title { font-family: var(--font-disp); font-size: 20px; letter-spacing: .03em; text-transform: capitalize }
+
+  /* Réglages : menu, puis une page par rubrique avec un retour */
+  .sub-view { display: flex; flex-direction: column; gap: 14px }
+  .sub-title { font-family: var(--font-disp); font-size: 20px; letter-spacing: .03em }
+  ul.menu { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px }
+  .menu-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 62px; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; color: var(--fg); text-align: left; cursor: pointer }
+  .menu-ic { width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 11px; background: var(--accent-soft); color: var(--accent) }
+  .menu-txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; line-height: 1.3 }
+  .menu-txt b { font-size: 16px }
+  .menu-txt small { color: var(--muted); font-size: .78rem }
+  .chev { flex: none; color: var(--muted); font-size: 24px; line-height: 1 }
 
   /* Palette de couleurs d'un exercice */
   .swatches { display: grid; grid-template-columns: repeat(6, minmax(36px, 44px)); justify-content: space-between; row-gap: 10px }
@@ -208,7 +222,7 @@
 
   .toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: .85rem; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50; box-shadow: var(--glow) }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0) }
-  /* Message « Séance supprimée » avec son bouton Annuler */
+  /* Message « Exercice supprimé » avec son bouton Annuler */
   .toast.undo { display: flex; align-items: center; gap: 14px; white-space: nowrap; background: #0a0a0b; border: 1px solid #3a3a3e; color: var(--fg); padding: 6px 6px 6px 16px; font-weight: 600; box-shadow: var(--shadow) }
   .toast.undo.show { pointer-events: auto }
   .toast.undo button { border: 0; border-radius: 999px; padding: 8px 14px; background: var(--accent); color: #fff; font-family: var(--font-disp); font-size: 15px; letter-spacing: .06em; box-shadow: var(--glow); cursor: pointer }
@@ -234,7 +248,7 @@
           <h2 id="formTitle">NOUVEL EXERCICE</h2>
           <button class="linkbtn" id="cancelEdit" hidden>Annuler</button>
         </div>
-        <div id="noCatalog" class="notice" hidden>Aucun exercice défini. <a id="goCatalog">Crée-en un d'abord</a> dans l'onglet Exercices.</div>
+        <div id="noCatalog" class="notice" hidden>Aucun exercice défini. <a id="goCatalog">Crée-en un d'abord</a> dans Réglages › Types d'exercices.</div>
         <form id="form" hidden>
           <div class="two">
             <div class="field">
@@ -242,13 +256,20 @@
               <input type="date" id="f-date" required>
             </div>
             <div class="field">
-              <span class="lbl" id="f-ex-lbl">Exercice</span>
-              <!-- Le select caché garde la valeur ; la liste native d'iOS n'affiche pas de couleur -->
-              <select id="f-ex" hidden aria-hidden="true" tabindex="-1"></select>
-              <button type="button" class="ex-pick" id="exPick" aria-haspopup="listbox" aria-expanded="false" aria-controls="exList" aria-labelledby="f-ex-lbl exPickName">
-                <span class="exdot"></span><span class="ex-pick-name" id="exPickName">—</span>
+              <span class="lbl" id="f-st-lbl">Type de séance</span>
+              <button type="button" class="ex-pick" id="stPick" aria-haspopup="listbox" aria-expanded="false" aria-controls="stPickList" aria-labelledby="f-st-lbl stPickName">
+                <span class="exdot"></span><span class="ex-pick-name" id="stPickName">Aucun type</span>
               </button>
             </div>
+          </div>
+          <ul class="opt-list" id="stPickList" role="listbox" aria-labelledby="f-st-lbl" hidden></ul>
+          <div class="field">
+            <span class="lbl" id="f-ex-lbl">Exercice</span>
+            <!-- Le select caché garde la valeur ; la liste native d'iOS n'affiche pas de couleur -->
+            <select id="f-ex" hidden aria-hidden="true" tabindex="-1"></select>
+            <button type="button" class="ex-pick" id="exPick" aria-haspopup="listbox" aria-expanded="false" aria-controls="exList" aria-labelledby="f-ex-lbl exPickName">
+              <span class="exdot"></span><span class="ex-pick-name" id="exPickName">—</span>
+            </button>
           </div>
           <ul class="opt-list" id="exList" role="listbox" aria-labelledby="f-ex-lbl" hidden></ul>
           <div class="field" style="align-items: center; gap: 10px">
@@ -301,7 +322,7 @@
         <input type="file" id="importFile" accept="application/json,.json" hidden>
         <div id="seedNotice" class="notice" hidden>Données d'exemple. Elles disparaissent dès ton premier ajout.</div>
         <ul class="rows" id="list"></ul>
-        <div id="histEmpty" class="empty" hidden>Aucune séance enregistrée.</div>
+        <div id="histEmpty" class="empty" hidden>Aucun exercice enregistré.</div>
       </section>
     </main>
 
@@ -315,20 +336,28 @@
         </div>
         <div class="cal-grid" id="calDow"></div>
         <div class="cal-grid" id="calGrid"></div>
-        <div class="foot" style="text-align:left">Les jours avec séance sont en rouge, avec un point par exercice à sa couleur. Touche-les pour voir le détail.</div>
+        <div class="cal-legend" id="calLegend"></div>
+        <div class="foot" style="text-align:left">Chaque jour de séance prend la couleur de son type (rouge sans type). Touche-le pour voir le détail.</div>
       </section>
       <section class="card" id="cal-day" hidden>
         <div class="day-head">
           <button class="back-btn" id="dayBack"><span aria-hidden="true">‹</span> Retour</button>
           <span class="day-title" id="dayTitle">—</span>
         </div>
-        <div class="seg" id="daySort" role="radiogroup" aria-label="Ordre des séances du jour">
+        <div class="field">
+          <span class="lbl" id="day-st-lbl">Type de séance</span>
+          <button type="button" class="ex-pick" id="dayStPick" aria-haspopup="listbox" aria-expanded="false" aria-controls="dayStList" aria-labelledby="day-st-lbl dayStName">
+            <span class="exdot"></span><span class="ex-pick-name" id="dayStName">Aucun type</span>
+          </button>
+        </div>
+        <ul class="opt-list" id="dayStList" role="listbox" aria-labelledby="day-st-lbl" hidden></ul>
+        <div class="seg" id="daySort" role="radiogroup" aria-label="Ordre des exercices du jour">
           <button type="button" role="radio" data-sort="az">A-Z</button>
           <button type="button" role="radio" data-sort="chrono">Chrono</button>
           <button type="button" role="radio" data-sort="color">Couleur</button>
         </div>
         <ul class="rows" id="dayList"></ul>
-        <div id="dayEmpty" class="empty" hidden>Aucune séance ce jour-là.</div>
+        <div id="dayEmpty" class="empty" hidden>Aucun exercice ce jour-là.</div>
       </section>
     </main>
 
@@ -362,8 +391,25 @@
       <div id="chartList" class="chart-list"></div>
     </main>
 
-    <!-- ===== EXERCICES ===== -->
-    <main id="panel-exercices" hidden>
+    <!-- ===== RÉGLAGES ===== -->
+    <main id="panel-reglages" hidden>
+      <section class="card" id="set-menu">
+        <h2>RÉGLAGES</h2>
+        <ul class="menu">
+          <li><button type="button" class="menu-row" data-open="exercices">
+            <span class="menu-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"></path></svg></span>
+            <span class="menu-txt"><b>Types d'exercices</b><small id="setExCount">—</small></span><span class="chev" aria-hidden="true">›</span>
+          </button></li>
+          <li><button type="button" class="menu-row" data-open="seances">
+            <span class="menu-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3L2 8l10 5 10-5-10-5zM2 16l10 5 10-5M2 12l10 5 10-5"></path></svg></span>
+            <span class="menu-txt"><b>Types de séances</b><small id="setStCount">—</small></span><span class="chev" aria-hidden="true">›</span>
+          </button></li>
+        </ul>
+      </section>
+
+      <!-- Types d'exercices -->
+      <div class="sub-view" id="set-exercices" hidden>
+      <div class="day-head"><button type="button" class="back-btn" data-back><span aria-hidden="true">‹</span> Réglages</button><span class="sub-title">TYPES D'EXERCICES</span></div>
       <section class="card">
         <div class="card-head">
           <h2 id="catFormTitle">AJOUTER UN EXERCICE</h2>
@@ -404,6 +450,34 @@
         <ul class="rows" id="catList"></ul>
         <div id="catEmpty" class="empty" hidden>Aucun exercice. Ajoute-en un ci-dessus.</div>
       </section>
+      </div>
+
+      <!-- Types de séances -->
+      <div class="sub-view" id="set-seances" hidden>
+      <div class="day-head"><button type="button" class="back-btn" data-back><span aria-hidden="true">‹</span> Réglages</button><span class="sub-title">TYPES DE SÉANCES</span></div>
+      <section class="card">
+        <div class="card-head">
+          <h2 id="stFormTitle">AJOUTER UN TYPE</h2>
+          <button class="linkbtn" id="cancelStEdit" hidden>Annuler</button>
+        </div>
+        <form id="stForm">
+          <div class="field">
+            <label class="lbl" for="st-name">Nom du type de séance</label>
+            <input type="text" id="st-name" placeholder="Push, Pull, Jambes, Cardio…" maxlength="24" required autocomplete="off">
+          </div>
+          <div class="field">
+            <span class="lbl" id="st-color-lbl">Couleur</span>
+            <div class="swatches" id="stSwatches" role="radiogroup" aria-labelledby="st-color-lbl"></div>
+          </div>
+          <button type="submit" class="btn-primary" id="stSubmitBtn">CRÉER LE TYPE</button>
+        </form>
+      </section>
+      <section class="card">
+        <h2>MES TYPES DE SÉANCES</h2>
+        <ul class="rows" id="stRows"></ul>
+        <div id="stEmpty" class="empty" hidden>Aucun type de séance. Crée-en un ci-dessus.</div>
+      </section>
+      </div>
     </main>
 
     <div class="foot">Version <span class="num" id="appVersion">—</span> · Données sur cet appareil. Pense à « Exporter ».</div>
@@ -423,9 +497,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"></path></svg>
         Courbes
       </button>
-      <button data-tab="exercices">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
-        Exercices
+      <button data-tab="reglages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Réglages
       </button>
     </div>
   </nav>
@@ -505,19 +579,24 @@
     }
 
     function isHex(s) { return /^#[0-9a-f]{6}$/i.test(String(s)); }
-    // Première couleur de la palette qu'aucun exercice n'utilise (sinon on reprend le cycle)
-    function nextFreeColor() {
+    // Première couleur de la palette que personne n'utilise dans la liste (sinon on reprend le cycle)
+    function nextFreeColor(list) {
       var used = {};
-      data.catalog.forEach(function (c) { if (isHex(c.color)) used[c.color.toLowerCase()] = 1; });
+      list.forEach(function (c) { if (isHex(c.color)) used[c.color.toLowerCase()] = 1; });
       for (var i = 0; i < PALETTE.length; i++) if (!used[PALETTE[i][0]]) return PALETTE[i][0];
-      return PALETTE[data.catalog.length % PALETTE.length][0];
+      return PALETTE[list.length % PALETTE.length][0];
     }
-    function ensureColors() {
+    // Complète les données d'avant la 1.4.0 (ou d'une sauvegarde importée) ; true si quelque chose a changé
+    function ensureShape() {
+      var changed = false;
+      if (!Array.isArray(data.sessionTypes)) { data.sessionTypes = []; changed = true; }
+      if (!data.dayTypes || typeof data.dayTypes !== "object" || Array.isArray(data.dayTypes)) { data.dayTypes = {}; changed = true; }
       var missing = data.catalog.filter(function (c) { return !isHex(c.color); });
       // D'abord les anciennes couleurs de groupe, pour qu'un groupe personnalisé ne prenne pas l'une d'elles
       missing.forEach(function (c) { var lc = LEGACY_GROUP_COLORS[c.groupe]; if (isHex(lc)) c.color = lc; });
-      missing.forEach(function (c) { if (!isHex(c.color)) c.color = nextFreeColor(); });
-      return missing.length > 0;
+      missing.forEach(function (c) { if (!isHex(c.color)) c.color = nextFreeColor(data.catalog); });
+      data.sessionTypes.forEach(function (t) { if (!isHex(t.color)) { t.color = nextFreeColor(data.sessionTypes); changed = true; } });
+      return changed || missing.length > 0;
     }
 
     var data = loadRaw(KEY);
@@ -526,10 +605,20 @@
       data = (old && old.entries && old.entries.length && !old.seeded) ? migrateV1(old) : seed();
       save();
     }
-    if (ensureColors()) save();
-    var catMap = {};
-    function rebuildCatMap() { catMap = {}; data.catalog.forEach(function (c) { catMap[c.id] = c; }); }
-    rebuildCatMap();
+    if (ensureShape()) save();
+    var catMap = {}, stMap = {};
+    function rebuildMaps() {
+      catMap = {}; data.catalog.forEach(function (c) { catMap[c.id] = c; });
+      stMap = {}; data.sessionTypes.forEach(function (t) { stMap[t.id] = t; });
+    }
+    rebuildMaps();
+    // Type de séance d'un jour : un seul par date, partagé par tous les exercices de la journée
+    function dayType(iso) { return stMap[data.dayTypes[iso]] || null; }
+    function setDayType(iso, typeId) {
+      if (!iso) return;
+      if (typeId) data.dayTypes[iso] = typeId; else delete data.dayTypes[iso];
+      save();
+    }
 
     var editingEntryId = null;
     var editingCatId = null;
@@ -591,18 +680,35 @@
     // ---------- Onglets ----------
     var tabBtns = Array.prototype.slice.call(document.querySelectorAll("nav.bottom button"));
     function showTab(name) {
+      if (name === "exercices") name = "reglages";   // l'onglet Exercices (1.3.0 et avant) vit désormais dans Réglages
       tabBtns.forEach(function (b) { if (b.dataset.tab === name) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
       $("panel-seance").hidden = name !== "seance";
       $("panel-calendrier").hidden = name !== "calendrier";
       $("panel-courbes").hidden = name !== "courbes";
-      $("panel-exercices").hidden = name !== "exercices";
+      $("panel-reglages").hidden = name !== "reglages";
       try { localStorage.setItem(TAB_KEY, name); } catch (e) {}
       if (name === "courbes") renderCharts();
       if (name === "calendrier") { closeDay(); renderCalendar(); }
+      if (name === "reglages") showSettingsView(null);
       window.scrollTo(0, 0);
     }
     tabBtns.forEach(function (b) { b.addEventListener("click", function () { showTab(b.dataset.tab); }); });
-    $("goCatalog").addEventListener("click", function () { showTab("exercices"); });
+
+    // Réglages : le menu (view = null) ou l'une de ses pages
+    function showSettingsView(view) {
+      $("set-menu").hidden = !!view;
+      $("set-exercices").hidden = view !== "exercices";
+      $("set-seances").hidden = view !== "seances";
+      window.scrollTo(0, 0);
+    }
+    function openSettings(view) { showTab("reglages"); showSettingsView(view); }
+    Array.prototype.forEach.call(document.querySelectorAll("[data-open]"), function (b) {
+      b.addEventListener("click", function () { showSettingsView(b.getAttribute("data-open")); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-back]"), function (b) {
+      b.addEventListener("click", function () { showSettingsView(null); });
+    });
+    $("goCatalog").addEventListener("click", function () { openSettings("exercices"); });
 
     // ---------- Utils ----------
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -673,14 +779,44 @@
     function setExListOpen(open) { $("exList").hidden = !open; $("exPick").setAttribute("aria-expanded", open ? "true" : "false"); }
     $("exPick").addEventListener("click", function () { setExListOpen($("exList").hidden); });
 
+    // Choix du type de séance d'un jour (formulaire et détail du jour) : le choix s'enregistre aussitôt
+    var NO_TYPE_COLOR = "#5a5a60";
+    function makeTypePicker(btn, list, getDate) {
+      function setOpen(open) { list.hidden = !open; btn.setAttribute("aria-expanded", open ? "true" : "false"); }
+      btn.addEventListener("click", function () { setOpen(list.hidden); });
+      function render() {
+        var cur = dayType(getDate());
+        btn.style.setProperty("--ex", cur ? cur.color : NO_TYPE_COLOR);
+        btn.querySelector(".ex-pick-name").textContent = cur ? cur.name : "Aucun type";
+        list.innerHTML = "";
+        [null].concat(data.sessionTypes.slice().sort(byColor)).forEach(function (t) {
+          var li = document.createElement("li"), b = document.createElement("button");
+          b.type = "button"; b.className = "opt-row"; b.setAttribute("role", "option");
+          b.setAttribute("aria-selected", (t ? (cur && cur.id === t.id) : !cur) ? "true" : "false");
+          b.style.setProperty("--ex", t ? t.color : NO_TYPE_COLOR);
+          b.innerHTML = '<span class="exdot"></span><span class="opt-name">' + (t ? esc(t.name) : "Aucun type") + '</span>';
+          // renderAll : les deux sélecteurs, le calendrier et les compteurs des Réglages suivent
+          b.addEventListener("click", function () { setDayType(getDate(), t ? t.id : null); setOpen(false); renderAll(); btn.focus(); });
+          li.appendChild(b); list.appendChild(li);
+        });
+        var li2 = document.createElement("li"), m = document.createElement("button");
+        m.type = "button"; m.className = "linkbtn"; m.textContent = data.sessionTypes.length ? "Gérer les types de séances ›" : "Créer un type de séance ›";
+        m.addEventListener("click", function () { setOpen(false); openSettings("seances"); });
+        li2.appendChild(m); list.appendChild(li2);
+      }
+      return { render: render, close: function () { setOpen(false); } };
+    }
+    var formTypePicker = makeTypePicker($("stPick"), $("stPickList"), function () { return $("f-date").value; });
+    $("f-date").addEventListener("change", function () { formTypePicker.render(); });
+
     function startEditEntry(eid) {
       var e = data.entries.filter(function (x) { return x.id === eid; })[0]; if (!e) return;
       editingEntryId = eid;
       $("f-date").value = e.date; $("f-ex").value = e.exId;
       $("f-series").value = e.series; $("f-reps").value = e.reps; $("f-val").value = fmtNum(e.valeur); $("f-com").value = e.comment || "";
-      onExChange();
+      onExChange(); formTypePicker.render();
       $("lastHint").textContent = "";
-      $("formTitle").textContent = "MODIFIER LA SÉANCE";
+      $("formTitle").textContent = "MODIFIER L'EXERCICE";
       $("submitBtn").textContent = "ENREGISTRER";
       $("cancelEdit").hidden = false;
       showTab("seance");
@@ -708,19 +844,19 @@
       };
       if (editingEntryId) {
         data.entries.forEach(function (x) { if (x.id === editingEntryId) { for (var k in fields) x[k] = fields[k]; } });
-        save(); cancelEntryEdit(); renderAll(); toast("Séance modifiée ✓");
+        save(); cancelEntryEdit(); renderAll(); toast("Exercice modifié ✓");
       } else {
         if (data.seeded) { data.entries = []; data.seeded = false; }
         fields.id = id(); data.entries.push(fields); save();
         $("f-reps").value = ""; $("f-val").value = ""; $("f-com").value = "";
-        onExChange(); renderAll(); toast("Séance ajoutée ✓");
+        onExChange(); renderAll(); toast("Exercice ajouté ✓");
       }
     });
 
     $("clearBtn").addEventListener("click", function () {
       if (!data.entries.length) return;
       var msg = data.seeded ? "Effacer les exemples et partir de zéro ?" : "Effacer tout l'historique de séances ? Action irréversible.";
-      if (window.confirm(msg)) { data.entries = []; data.seeded = false; if (editingEntryId) cancelEntryEdit(); save(); renderAll(); toast("Historique vidé"); }
+      if (window.confirm(msg)) { data.entries = []; data.dayTypes = {}; data.seeded = false; if (editingEntryId) cancelEntryEdit(); save(); renderAll(); toast("Historique vidé"); }
     });
 
     // ---------- Export / Import ----------
@@ -743,8 +879,10 @@
           var obj = JSON.parse(r.result);
           if (!obj || !Array.isArray(obj.catalog) || !Array.isArray(obj.entries)) throw 0;
           if (window.confirm("Remplacer les données actuelles par cette sauvegarde ?")) {
-            data = { catalog: obj.catalog, entries: obj.entries, seeded: false };
-            ensureColors(); rebuildCatMap(); if (editingEntryId) cancelEntryEdit(); if (editingCatId) cancelCatEdit(); save(); renderAll(); toast("Sauvegarde importée ✓");
+            data = { catalog: obj.catalog, entries: obj.entries, sessionTypes: obj.sessionTypes, dayTypes: obj.dayTypes, seeded: false };
+            ensureShape(); rebuildMaps();
+            if (editingEntryId) cancelEntryEdit(); if (editingCatId) cancelCatEdit(); if (editingStId) cancelStEdit();
+            save(); renderAll(); toast("Sauvegarde importée ✓");
           }
         } catch (e) { toast("Fichier invalide"); }
         $("importFile").value = "";
@@ -765,35 +903,36 @@
     $("cat-groupe").addEventListener("change", function () { $("customGroupeField").hidden = this.value !== "__custom"; });
     $("cat-unite").addEventListener("change", function () { $("customUnitField").hidden = this.value !== "__custom"; });
 
-    // Couleur de l'exercice : pastilles de la palette + une pastille arc-en-ciel pour une couleur libre
-    var catColor = PALETTE[0][0];
-    (function fillSwatches() {
-      var box = $("catSwatches");
+    // Choix d'une couleur : pastilles de la palette + une pastille arc-en-ciel pour une couleur libre.
+    // Sert aux types d'exercices et aux types de séances ; get() rend la couleur choisie.
+    function makeSwatches(box) {
+      var current = PALETTE[0][0], btns = [];
       PALETTE.forEach(function (p) {
         var b = document.createElement("button"); b.type = "button"; b.className = "swatch";
         b.setAttribute("role", "radio"); b.setAttribute("aria-label", p[1]);
         b.setAttribute("data-color", p[0]); b.style.setProperty("--sw", p[0]);
-        b.addEventListener("click", function () { setCatColor(p[0]); });
-        box.appendChild(b);
+        b.addEventListener("click", function () { set(p[0]); });
+        box.appendChild(b); btns.push(b);
       });
-      var lab = document.createElement("label"); lab.className = "swatch custom"; lab.id = "swCustom";
-      var inp = document.createElement("input"); inp.type = "color"; inp.id = "cat-color-custom";
+      var cust = document.createElement("label"); cust.className = "swatch custom";
+      var inp = document.createElement("input"); inp.type = "color";
       inp.setAttribute("aria-label", "Couleur personnalisée");
-      inp.addEventListener("input", function () { setCatColor(inp.value); });
-      lab.appendChild(inp); box.appendChild(lab);
-    })();
-    function setCatColor(hex) {
-      catColor = String(hex).toLowerCase();
-      var inPalette = false;
-      Array.prototype.forEach.call($("catSwatches").querySelectorAll("button.swatch"), function (b) {
-        var on = b.getAttribute("data-color") === catColor; if (on) inPalette = true;
-        b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false");
-      });
-      var cust = $("swCustom");
-      cust.classList.toggle("on", !inPalette);
-      if (inPalette) cust.style.removeProperty("--sw"); else cust.style.setProperty("--sw", catColor);
-      $("cat-color-custom").value = catColor;
+      inp.addEventListener("input", function () { set(inp.value); });
+      cust.appendChild(inp); box.appendChild(cust);
+      function set(hex) {
+        current = String(hex).toLowerCase();
+        var inPalette = false;
+        btns.forEach(function (b) {
+          var on = b.getAttribute("data-color") === current; if (on) inPalette = true;
+          b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false");
+        });
+        cust.classList.toggle("on", !inPalette);
+        if (inPalette) cust.style.removeProperty("--sw"); else cust.style.setProperty("--sw", current);
+        inp.value = current;
+      }
+      return { set: set, get: function () { return current; } };
     }
+    var catSw = makeSwatches($("catSwatches"));
 
     function startEditCat(cid) {
       var c = catMap[cid]; if (!c) return;
@@ -803,18 +942,18 @@
       else { $("cat-groupe").value = "__custom"; $("customGroupeField").hidden = false; $("cat-groupe-custom").value = c.groupe; }
       if (UNITS.indexOf(c.unite) >= 0) { $("cat-unite").value = c.unite; $("customUnitField").hidden = true; }
       else { $("cat-unite").value = "__custom"; $("customUnitField").hidden = false; $("cat-unite-custom").value = c.unite; }
-      setCatColor(isHex(c.color) ? c.color : nextFreeColor());
+      catSw.set(isHex(c.color) ? c.color : nextFreeColor(data.catalog));
       $("catFormTitle").textContent = "MODIFIER L'EXERCICE";
       $("catSubmitBtn").textContent = "ENREGISTRER";
       $("cancelCatEdit").hidden = false;
-      showTab("exercices");
+      openSettings("exercices");
     }
     function cancelCatEdit() {
       editingCatId = null;
       $("cat-name").value = ""; $("cat-groupe").value = GROUPS[0]; $("cat-unite").value = "kg";
       $("cat-groupe-custom").value = ""; $("cat-unite-custom").value = "";
       $("customGroupeField").hidden = true; $("customUnitField").hidden = true;
-      setCatColor(nextFreeColor());
+      catSw.set(nextFreeColor(data.catalog));
       $("catFormTitle").textContent = "AJOUTER UN EXERCICE";
       $("catSubmitBtn").textContent = "CRÉER L'EXERCICE";
       $("cancelCatEdit").hidden = true;
@@ -827,18 +966,90 @@
       var groupe = $("cat-groupe").value; if (groupe === "__custom") groupe = ($("cat-groupe-custom").value.trim() || "Autre");
       var unite = $("cat-unite").value; if (unite === "__custom") unite = ($("cat-unite-custom").value.trim() || "kg");
       if (editingCatId) {
-        var c = catMap[editingCatId]; c.name = name; c.groupe = groupe; c.unite = unite; c.color = catColor;
+        var c = catMap[editingCatId]; c.name = name; c.groupe = groupe; c.unite = unite; c.color = catSw.get();
         data.entries.forEach(function (x) { if (x.exId === editingCatId) { x.name = name; x.groupe = groupe; x.unite = unite; } });
-        rebuildCatMap(); save(); cancelCatEdit(); renderAll(); toast("Exercice modifié ✓");
+        rebuildMaps(); save(); cancelCatEdit(); renderAll(); toast("Exercice modifié ✓");
       } else {
-        var nc = { id: id(), name: name, groupe: groupe, unite: unite, color: catColor };
-        data.catalog.push(nc); rebuildCatMap(); save(); cancelCatEdit(); renderAll();
+        var nc = { id: id(), name: name, groupe: groupe, unite: unite, color: catSw.get() };
+        data.catalog.push(nc); rebuildMaps(); save(); cancelCatEdit(); renderAll();
         $("f-ex").value = nc.id; onExChange(); toast("Exercice créé ✓");
       }
     });
 
+    // ---------- Types de séances (Réglages) ----------
+    var editingStId = null;
+    var stSw = makeSwatches($("stSwatches"));
+    function startEditSt(tid) {
+      var t = stMap[tid]; if (!t) return;
+      editingStId = tid;
+      $("st-name").value = t.name; stSw.set(t.color);
+      $("stFormTitle").textContent = "MODIFIER LE TYPE";
+      $("stSubmitBtn").textContent = "ENREGISTRER";
+      $("cancelStEdit").hidden = false;
+      openSettings("seances");
+    }
+    function cancelStEdit() {
+      editingStId = null;
+      $("st-name").value = ""; stSw.set(nextFreeColor(data.sessionTypes));
+      $("stFormTitle").textContent = "AJOUTER UN TYPE";
+      $("stSubmitBtn").textContent = "CRÉER LE TYPE";
+      $("cancelStEdit").hidden = true;
+    }
+    $("cancelStEdit").addEventListener("click", cancelStEdit);
+    $("stForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var name = $("st-name").value.trim(); if (!name) return;
+      if (editingStId) { var t = stMap[editingStId]; t.name = name; t.color = stSw.get(); toast("Type modifié ✓"); }
+      else { data.sessionTypes.push({ id: id(), name: name, color: stSw.get() }); toast("Type créé ✓"); }
+      rebuildMaps(); save(); cancelStEdit(); renderAll();
+    });
+
+    // Jours de séance (avec au moins un exercice) par type
+    function typedDayCounts() {
+      var withEntries = {}, counts = {};
+      data.entries.forEach(function (e) { withEntries[e.date] = 1; });
+      Object.keys(data.dayTypes).forEach(function (d) { if (withEntries[d]) { var k = data.dayTypes[d]; counts[k] = (counts[k] || 0) + 1; } });
+      return counts;
+    }
+    function renderSessionTypes() {
+      var ul = $("stRows"); ul.innerHTML = "";
+      $("stEmpty").hidden = data.sessionTypes.length > 0;
+      var counts = typedDayCounts();
+      data.sessionTypes.slice().sort(byColor).forEach(function (t) {
+        var n = counts[t.id] || 0;
+        var li = document.createElement("li"); li.className = "row ex"; li.style.setProperty("--ex", t.color);
+        var left = document.createElement("div");
+        left.innerHTML = '<div class="title">' + esc(t.name) + '</div><div class="meta"><span class="num">' + n + '</span> jour' + (n > 1 ? 's' : '') + ' de séance</div>';
+        var right = document.createElement("div"); right.className = "right";
+        var edit = document.createElement("button"); edit.className = "iconbtn"; edit.setAttribute("aria-label", "Modifier " + t.name);
+        edit.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>';
+        edit.addEventListener("click", function () { startEditSt(t.id); });
+        var del = document.createElement("button"); del.className = "iconbtn del"; del.setAttribute("aria-label", "Supprimer " + t.name);
+        del.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg>';
+        del.addEventListener("click", function () {
+          var m = "Supprimer le type « " + t.name + " » ?" + (n === 1 ? " Son jour de séance n'aura plus de type (les exercices restent)." : n > 1 ? " Ses " + n + " jours de séance n'auront plus de type (les exercices restent)." : "");
+          if (!window.confirm(m)) return;
+          data.sessionTypes = data.sessionTypes.filter(function (x) { return x.id !== t.id; });
+          Object.keys(data.dayTypes).forEach(function (d) { if (data.dayTypes[d] === t.id) delete data.dayTypes[d]; });
+          if (editingStId === t.id) cancelStEdit();
+          rebuildMaps(); save(); renderAll(); toast("Type supprimé");
+        });
+        right.appendChild(edit); right.appendChild(del);
+        li.appendChild(left); li.appendChild(right); ul.appendChild(li);
+      });
+    }
+    function renderSettingsMenu() {
+      var ne = data.catalog.length, nt = data.sessionTypes.length;
+      $("setExCount").textContent = ne + " exercice" + (ne > 1 ? "s" : "");
+      $("setStCount").textContent = nt ? nt + " type" + (nt > 1 ? "s" : "") : "Aucun type pour l'instant";
+    }
+
     // ---------- Rendus ----------
-    function renderAll() { renderExSelect(); renderCatalog(); renderList(); if (!$("panel-courbes").hidden) renderCharts(); if (!$("panel-calendrier").hidden) renderCalendar(); }
+    function renderAll() {
+      renderExSelect(); renderCatalog(); renderSessionTypes(); renderSettingsMenu(); renderList(); formTypePicker.render();
+      if (!$("panel-courbes").hidden) renderCharts();
+      if (!$("panel-calendrier").hidden) { renderCalendar(); if (!$("cal-day").hidden) dayTypePicker.render(); }
+    }
 
     function renderExSelect() {
       var sel = $("f-ex"), list = $("exList"); var prev = sel.value; sel.innerHTML = ""; list.innerHTML = "";
@@ -887,7 +1098,7 @@
       edit.addEventListener("click", function () { startEditEntry(e.id); });
       var del = document.createElement("button"); del.className = "iconbtn del"; del.setAttribute("aria-label", "Supprimer");
       del.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg>';
-      // Pas de confirmation : la séance part tout de suite, « Annuler » la remet à sa place pendant 5 s
+      // Pas de confirmation : l'exercice part tout de suite, « Annuler » le remet à sa place pendant 5 s
       del.addEventListener("click", function () {
         var idx = data.entries.indexOf(e); if (idx < 0) return;
         var wasSeeded = data.seeded;
@@ -895,11 +1106,11 @@
         if (!data.entries.length) data.seeded = false;
         if (editingEntryId === e.id) cancelEntryEdit();
         save(); renderAll(); if (afterChange) afterChange();
-        toast("Séance supprimée", function () {
-          if (!catMap[e.exId]) { toast("Exercice supprimé entre-temps"); return; }
+        toast("Exercice supprimé", function () {
+          if (!catMap[e.exId]) { toast("Retiré du catalogue entre-temps"); return; }
           data.entries.splice(Math.min(idx, data.entries.length), 0, e); data.seeded = wasSeeded;
           save(); renderAll(); if (afterChange && !$("panel-calendrier").hidden) afterChange();
-          toast("Séance rétablie ✓");
+          toast("Exercice rétabli ✓");
         });
       });
       right.appendChild(val); right.appendChild(edit); right.appendChild(del);
@@ -937,7 +1148,7 @@
           data.catalog = data.catalog.filter(function (x) { return x.id !== c.id; });
           data.entries = data.entries.filter(function (x) { return x.exId !== c.id; });
           if (editingCatId === c.id) cancelCatEdit();
-          rebuildCatMap(); save(); renderAll(); toast("Exercice supprimé");
+          rebuildMaps(); save(); renderAll(); toast("Exercice retiré du catalogue");
         });
         right.appendChild(edit); right.appendChild(del);
         li.appendChild(left); li.appendChild(right); ul.appendChild(li);
@@ -949,14 +1160,13 @@
     $("calNext").addEventListener("click", function () { calRef.setMonth(calRef.getMonth() + 1); renderCalendar(); });
     $("dayBack").addEventListener("click", closeDay);
 
-    // Par date : nombre de séances et exercices faits (dans l'ordre de saisie, sans doublon)
-    function daysSummary() {
-      var m = {};
-      data.entries.forEach(function (e) {
-        var s = m[e.date] || (m[e.date] = { n: 0, ex: [] });
-        s.n++; if (s.ex.indexOf(e.exId) < 0) s.ex.push(e.exId);
-      });
-      return m;
+    // Par date : nombre d'exercices faits
+    function countsByDate() { var m = {}; data.entries.forEach(function (e) { m[e.date] = (m[e.date] || 0) + 1; }); return m; }
+    // Texte foncé sur les couleurs claires (ambre, citron…), blanc sur les autres
+    function inkFor(hex) {
+      if (!isHex(hex)) return "#fff";
+      var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+      return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? "#101011" : "#fff";
     }
 
     function renderCalendar() {
@@ -966,21 +1176,33 @@
       var grid = $("calGrid"); grid.innerHTML = "";
       var first = new Date(y, mo, 1); var offset = (first.getDay() + 6) % 7; // lundi = 0
       var ndays = new Date(y, mo + 1, 0).getDate();
-      var days = daysSummary(); var today = todayISO();
+      var counts = countsByDate(); var today = todayISO();
+      var legend = {}, legendOrder = [];   // types vus ce mois-ci, pour la légende
       for (var i = 0; i < offset; i++) { var blank = document.createElement("div"); blank.className = "cal-cell"; grid.appendChild(blank); }
       for (var d = 1; d <= ndays; d++) {
         var iso = y + "-" + pad(mo + 1) + "-" + pad(d);
-        var sum = days[iso], n = sum ? sum.n : 0;
+        var n = counts[iso] || 0;
         if (n > 0) {
+          var t = dayType(iso), col = t ? t.color : accent(), key = t ? t.id : "";
+          if (!legend[key]) { legend[key] = { t: t, n: 0 }; legendOrder.push(key); }
+          legend[key].n++;
           var b = document.createElement("button"); b.type = "button"; b.className = "cal-cell" + (iso === today ? " today" : "");
-          b.innerHTML = d + '<span class="cal-dots" aria-hidden="true">' + sum.ex.slice(0, 4).map(function (x) { return '<i style="--d:' + exColor(x) + '"></i>'; }).join("") + '</span>';
-          b.setAttribute("aria-label", d + " " + MONTHS[mo] + ", " + n + " séance" + (n > 1 ? "s" : ""));
+          b.style.setProperty("--day", col); b.style.setProperty("--day-ink", inkFor(col));
+          b.textContent = d;
+          b.setAttribute("aria-label", d + " " + MONTHS[mo] + ", " + (t ? t.name + ", " : "") + n + " exercice" + (n > 1 ? "s" : ""));
           (function (dateIso) { b.addEventListener("click", function () { openDay(dateIso); }); })(iso);
           grid.appendChild(b);
         } else {
           var cell = document.createElement("div"); cell.className = "cal-cell cur" + (iso === today ? " today" : ""); cell.textContent = d; grid.appendChild(cell);
         }
       }
+      // Légende : les types du mois (dans l'ordre des couleurs), « Sans type » en dernier
+      legendOrder.sort(function (a, b) { if (!a) return 1; if (!b) return -1; return byColor(legend[a].t, legend[b].t); });
+      $("calLegend").innerHTML = legendOrder.map(function (k) {
+        var L = legend[k];
+        return '<span><i style="--d:' + (L.t ? L.t.color : accent()) + '"></i>' + (L.t ? esc(L.t.name) : "Sans type") + ' <b>' + L.n + '</b></span>';
+      }).join("");
+      $("calLegend").hidden = !legendOrder.length || (legendOrder.length === 1 && !legendOrder[0] && !data.sessionTypes.length);
     }
 
     // Ordre des séances d'une journée, mémorisé pour toutes les dates : A-Z, chrono (ordre de saisie) ou couleur
@@ -1000,9 +1222,13 @@
       });
     });
 
+    var dayTypePicker = makeTypePicker($("dayStPick"), $("dayStList"), function () { return openedDay; });
+
     function openDay(iso) {
+      if (openedDay !== iso) dayTypePicker.close();
       openedDay = iso;
       $("dayTitle").textContent = frLong(iso);
+      dayTypePicker.render();
       Array.prototype.forEach.call($("daySort").querySelectorAll("button"), function (b) { b.setAttribute("aria-checked", b.getAttribute("data-sort") === daySort ? "true" : "false"); });
       var ul = $("dayList"); ul.innerHTML = "";
       var list = sortDay(data.entries.filter(function (e) { return e.date === iso; }));
@@ -1250,7 +1476,7 @@
     }
 
     // ---------- Init ----------
-    cancelCatEdit();
+    cancelCatEdit(); cancelStEdit();
     renderAll();
     try { var savedTab = localStorage.getItem(TAB_KEY); if (savedTab && savedTab !== "seance") showTab(savedTab); } catch (e) {}
   })();
