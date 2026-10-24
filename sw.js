@@ -4,8 +4,8 @@
 // POUR PUBLIER UNE MISE À JOUR : changer VERSION (et NOTES) ci-dessous,
 // puis envoyer les fichiers modifiés sur GitHub. Sans changement de VERSION,
 // les téléphones ne voient pas la nouvelle version.
-const VERSION = "1.1.0";
-const NOTES = "Nouveau look, calendrier et corrections";
+const VERSION = "1.2.0";
+const NOTES = "Une couleur par exercice, toutes les courbes avec filtre et tri";
 
 const CACHE = "suivi-muscu-" + VERSION;
 const ASSETS = [

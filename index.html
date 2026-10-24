@@ -64,7 +64,7 @@
   .linkbtn { background: none; border: 0; color: var(--muted); font-weight: 600; font-size: 13px; cursor: pointer; padding: 4px }
   .linkbtn:hover { color: var(--fg) }
 
-  label.lbl { font-weight: 600; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
+  label.lbl, .field > span.lbl { font-weight: 600; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
   .field { display: flex; flex-direction: column; gap: 6px; min-width: 0 }
   input, select, textarea {
     font: inherit; width: 100%; padding: 12px; background: var(--surface-2);
@@ -112,7 +112,10 @@
   li.row .comment { grid-column: 1 / -1; font-size: .8rem; color: var(--muted); font-style: italic; margin-top: 2px }
   li.row .right { display: flex; align-items: center; gap: 4px }
   li.row .val { font-family: var(--font-disp); font-size: 24px; white-space: nowrap; color: var(--accent); margin-right: 4px }
-  .pill { display: inline-block; font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-right: 6px }
+  .pill { display: inline-block; font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-right: 6px; background: rgba(255,255,255,.07); color: var(--muted) }
+  /* Couleur de l'exercice (--ex) : liseré à gauche des lignes, pastille devant les noms */
+  li.row.ex { box-shadow: inset 4px 0 0 var(--ex, var(--accent)); padding-left: 16px }
+  .exdot { display: inline-block; width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--ex, var(--accent)); box-shadow: 0 0 8px var(--ex, var(--accent)) }
   .iconbtn { background: none; border: 0; cursor: pointer; color: var(--muted); padding: 5px; border-radius: 8px; display: flex }
   .iconbtn:hover { color: var(--fg) }
   .iconbtn.del:hover { color: var(--danger) }
@@ -133,9 +136,33 @@
   .back-btn { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--line); color: var(--fg); border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: 14px; cursor: pointer }
   .day-title { font-family: var(--font-disp); font-size: 20px; letter-spacing: .03em; text-transform: capitalize }
 
-  /* Courbes */
-  .chart-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap }
-  .chart-head select { width: auto; flex: 1 1 160px }
+  /* Palette de couleurs d'un exercice */
+  .swatches { display: grid; grid-template-columns: repeat(6, minmax(36px, 44px)); justify-content: space-between; row-gap: 10px }
+  .swatch { position: relative; aspect-ratio: 1 / 1; border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: var(--sw); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12) }
+  .swatch.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--fg), 0 0 14px var(--sw) }
+  .swatch.custom { --sw: var(--surface-2); background: radial-gradient(circle, var(--sw) 0 46%, transparent 48%), conic-gradient(#e8141f, #f59e0b, #84cc16, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #e8141f) }
+  .swatch.custom input { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 50%; opacity: 0; cursor: pointer }
+
+  /* Courbes : toutes affichées, avec filtre et tri */
+  #panel-courbes, .chart-list { display: flex; flex-direction: column; gap: 14px }
+  .btn-ghost[aria-expanded="true"] { color: var(--fg); border-color: var(--accent) }
+  .opt-panel { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px }
+  .opt-actions { display: flex; gap: 14px }
+  ul.opt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px }
+  .opt-row { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; cursor: pointer }
+  .opt-row input[type="checkbox"] { width: 20px; height: 20px; flex: none; margin: 0; padding: 0; accent-color: var(--accent) }
+  .opt-name { flex: 1 1 auto; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  .opt-sub { flex: none; color: var(--muted); font-size: .75rem }
+  li.order-row { cursor: default; gap: 6px; padding-right: 2px }
+  .opt-row.dim { opacity: .5 }
+  .opt-row .mini-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0 }
+  .opt-row .mini-btn:disabled { opacity: .3; cursor: default }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px }
+  .seg button { min-height: 40px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-weight: 600; font-size: 13px; cursor: pointer }
+  .seg button[aria-checked="true"] { background: var(--accent); color: #fff; box-shadow: var(--glow) }
+  .chart-title { display: flex; align-items: center; gap: 10px; min-width: 0 }
+  .chart-title h3 { margin: 0; min-width: 0; font-family: var(--font-disp); font-weight: 400; font-size: 19px; letter-spacing: .04em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  .chart-title .pill { margin: 0 0 0 auto; flex: none }
   .chart-metric { color: var(--muted); font-size: .78rem }
   .chart-metric b { color: var(--fg); font-weight: 700 }
   svg.chart { width: 100%; height: auto; display: block }
@@ -270,13 +297,31 @@
     <!-- ===== COURBES ===== -->
     <main id="panel-courbes" hidden>
       <section class="card">
-        <div class="chart-head">
-          <h2 style="margin:0">ÉVOLUTION</h2>
-          <select id="chartSel" aria-label="Exercice à afficher"></select>
+        <div class="card-head">
+          <h2>ÉVOLUTION</h2>
+          <div class="tools">
+            <button class="btn-ghost" id="chartFilterBtn" aria-expanded="false" aria-controls="chartFilterPanel">Filtrer</button>
+            <button class="btn-ghost" id="chartSortBtn" aria-expanded="false" aria-controls="chartSortPanel">Trier</button>
+          </div>
         </div>
-        <div class="chart-metric" id="chartMetric"></div>
-        <div id="chartArea"></div>
+        <div class="chart-metric">Meilleure valeur par séance, pour chaque exercice.</div>
+        <div class="opt-panel" id="chartFilterPanel" hidden>
+          <div class="opt-actions">
+            <button type="button" class="linkbtn" id="filterAll">Tout afficher</button>
+            <button type="button" class="linkbtn" id="filterNone">Tout masquer</button>
+          </div>
+          <ul class="opt-list" id="chartFilterList"></ul>
+        </div>
+        <div class="opt-panel" id="chartSortPanel" hidden>
+          <div class="seg" role="radiogroup" aria-label="Ordre des courbes">
+            <button type="button" role="radio" data-sort="az">A-Z</button>
+            <button type="button" role="radio" data-sort="recent">Récent</button>
+            <button type="button" role="radio" data-sort="custom">Personnalisé</button>
+          </div>
+          <ul class="opt-list" id="chartOrderList"></ul>
+        </div>
       </section>
+      <div id="chartList" class="chart-list"></div>
     </main>
 
     <!-- ===== EXERCICES ===== -->
@@ -308,6 +353,10 @@
           <div class="field" id="customUnitField" hidden>
             <label class="lbl" for="cat-unite-custom">Unité personnalisée</label>
             <input type="text" id="cat-unite-custom" placeholder="ex : reps, tours…" maxlength="6" autocomplete="off">
+          </div>
+          <div class="field" style="margin: 4px 0 16px">
+            <span class="lbl" id="cat-color-lbl">Couleur</span>
+            <div class="swatches" id="catSwatches" role="radiogroup" aria-labelledby="cat-color-lbl"></div>
           </div>
           <button type="submit" class="btn-primary" id="catSubmitBtn">CRÉER L'EXERCICE</button>
         </form>
@@ -351,12 +400,21 @@
     var KEY = "suivi-muscu-v2";
     var OLD_KEY = "suivi-muscu-v1";
     var TAB_KEY = "musclor-tab";
+    var CHARTS_KEY = "musclor-courbes";
     var $ = function (id) { return document.getElementById(id); };
 
     var GROUPS = ["Pectoraux","Dos","Épaules","Biceps","Triceps","Jambes","Fessiers","Mollets","Abdos","Avant-bras","Cardio"];
     var UNITS = ["kg","%","min","s","km","niv"];
-    var groupColors = {
-      "Pectoraux": "#ef4444", "Dos": "#3b82f6", "Épaules": "#f59e0b", "Biceps": "#8b5cf6",
+    // Couleurs proposées pour un exercice (la dernière pastille du sélecteur ouvre une couleur libre)
+    var PALETTE = [
+      ["#e8141f", "Rouge"], ["#f97316", "Orange"], ["#f59e0b", "Ambre"], ["#84cc16", "Citron vert"],
+      ["#10b981", "Émeraude"], ["#14b8a6", "Turquoise"], ["#06b6d4", "Cyan"], ["#3b82f6", "Bleu"],
+      ["#6366f1", "Indigo"], ["#8b5cf6", "Violet"], ["#ec4899", "Rose"]
+    ];
+    // Jusqu'à la 1.1.0, la couleur venait du groupe de muscle. Elle appartient désormais à
+    // l'exercice : chaque exercice sans couleur reprend une seule fois celle de son ancien groupe.
+    var LEGACY_GROUP_COLORS = {
+      "Pectoraux": "#e8141f", "Dos": "#3b82f6", "Épaules": "#f59e0b", "Biceps": "#8b5cf6",
       "Triceps": "#ec4899", "Jambes": "#10b981", "Fessiers": "#14b8a6", "Mollets": "#84cc16",
       "Abdos": "#f97316", "Avant-bras": "#6366f1", "Cardio": "#06b6d4"
     };
@@ -378,10 +436,10 @@
       var cDC = id(), cPresse = id(), cTract = id(), cPente = id();
       return {
         catalog: [
-          { id: cDC, name: "Développé couché", groupe: "Pectoraux", unite: "kg" },
-          { id: cPresse, name: "Presse", groupe: "Jambes", unite: "kg" },
-          { id: cTract, name: "Tractions", groupe: "Dos", unite: "kg" },
-          { id: cPente, name: "Pente (tapis)", groupe: "Cardio", unite: "%" }
+          { id: cDC, name: "Développé couché", groupe: "Pectoraux", unite: "kg", color: "#e8141f" },
+          { id: cPresse, name: "Presse", groupe: "Jambes", unite: "kg", color: "#10b981" },
+          { id: cTract, name: "Tractions", groupe: "Dos", unite: "kg", color: "#3b82f6" },
+          { id: cPente, name: "Pente (tapis)", groupe: "Cardio", unite: "%", color: "#06b6d4" }
         ],
         entries: [
           { id: id(), date: iso(28), exId: cDC, name: "Développé couché", groupe: "Pectoraux", unite: "kg", series: 4, reps: 10, valeur: 40, comment: "" },
@@ -404,12 +462,29 @@
       return { catalog: catalog, entries: entries, seeded: false };
     }
 
+    function isHex(s) { return /^#[0-9a-f]{6}$/i.test(String(s)); }
+    // Première couleur de la palette qu'aucun exercice n'utilise (sinon on reprend le cycle)
+    function nextFreeColor() {
+      var used = {};
+      data.catalog.forEach(function (c) { if (isHex(c.color)) used[c.color.toLowerCase()] = 1; });
+      for (var i = 0; i < PALETTE.length; i++) if (!used[PALETTE[i][0]]) return PALETTE[i][0];
+      return PALETTE[data.catalog.length % PALETTE.length][0];
+    }
+    function ensureColors() {
+      var missing = data.catalog.filter(function (c) { return !isHex(c.color); });
+      // D'abord les anciennes couleurs de groupe, pour qu'un groupe personnalisé ne prenne pas l'une d'elles
+      missing.forEach(function (c) { var lc = LEGACY_GROUP_COLORS[c.groupe]; if (isHex(lc)) c.color = lc; });
+      missing.forEach(function (c) { if (!isHex(c.color)) c.color = nextFreeColor(); });
+      return missing.length > 0;
+    }
+
     var data = loadRaw(KEY);
     if (!data || !data.catalog) {
       var old = loadRaw(OLD_KEY);
       data = (old && old.entries && old.entries.length && !old.seeded) ? migrateV1(old) : seed();
       save();
     }
+    if (ensureColors()) save();
     var catMap = {};
     function rebuildCatMap() { catMap = {}; data.catalog.forEach(function (c) { catMap[c.id] = c; }); }
     rebuildCatMap();
@@ -467,7 +542,7 @@
       $("panel-courbes").hidden = name !== "courbes";
       $("panel-exercices").hidden = name !== "exercices";
       try { localStorage.setItem(TAB_KEY, name); } catch (e) {}
-      if (name === "courbes") renderChart();
+      if (name === "courbes") renderCharts();
       if (name === "calendrier") { closeDay(); renderCalendar(); }
       window.scrollTo(0, 0);
     }
@@ -480,9 +555,8 @@
     function parseNum(s) { return parseFloat(String(s).replace(",", ".")); }
     function frDate(iso) { var p = String(iso).split("-"); return p.length === 3 ? p[2] + "/" + p[1] : iso; }
     function frLong(iso) { var p = String(iso).split("-"); return p.length === 3 ? (parseInt(p[2], 10) + " " + MONTHS[parseInt(p[1], 10) - 1] + " " + p[0]) : iso; }
-    function softBg(hex) { return hex + "22"; }
+    function exColor(exId) { var c = catMap[exId]; return (c && isHex(c.color)) ? c.color : accent(); }
     function byName(a, b) { return a.name.localeCompare(b.name, "fr"); }
-    function usedExerciseIds() { var seen = {}, out = []; data.entries.forEach(function (e) { if (!seen[e.exId]) { seen[e.exId] = 1; out.push(e.exId); } }); return out; }
     function stepFor(unit) { return unit === "kg" ? 2.5 : (unit === "%" ? 0.5 : 1); }
     function curExUnit() { var c = catMap[$("f-ex").value]; return c ? c.unite : "kg"; }
 
@@ -588,7 +662,7 @@
           if (!obj || !Array.isArray(obj.catalog) || !Array.isArray(obj.entries)) throw 0;
           if (window.confirm("Remplacer les données actuelles par cette sauvegarde ?")) {
             data = { catalog: obj.catalog, entries: obj.entries, seeded: false };
-            rebuildCatMap(); if (editingEntryId) cancelEntryEdit(); if (editingCatId) cancelCatEdit(); save(); renderAll(); toast("Sauvegarde importée ✓");
+            ensureColors(); rebuildCatMap(); if (editingEntryId) cancelEntryEdit(); if (editingCatId) cancelCatEdit(); save(); renderAll(); toast("Sauvegarde importée ✓");
           }
         } catch (e) { toast("Fichier invalide"); }
         $("importFile").value = "";
@@ -609,6 +683,36 @@
     $("cat-groupe").addEventListener("change", function () { $("customGroupeField").hidden = this.value !== "__custom"; });
     $("cat-unite").addEventListener("change", function () { $("customUnitField").hidden = this.value !== "__custom"; });
 
+    // Couleur de l'exercice : pastilles de la palette + une pastille arc-en-ciel pour une couleur libre
+    var catColor = PALETTE[0][0];
+    (function fillSwatches() {
+      var box = $("catSwatches");
+      PALETTE.forEach(function (p) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "swatch";
+        b.setAttribute("role", "radio"); b.setAttribute("aria-label", p[1]);
+        b.setAttribute("data-color", p[0]); b.style.setProperty("--sw", p[0]);
+        b.addEventListener("click", function () { setCatColor(p[0]); });
+        box.appendChild(b);
+      });
+      var lab = document.createElement("label"); lab.className = "swatch custom"; lab.id = "swCustom";
+      var inp = document.createElement("input"); inp.type = "color"; inp.id = "cat-color-custom";
+      inp.setAttribute("aria-label", "Couleur personnalisée");
+      inp.addEventListener("input", function () { setCatColor(inp.value); });
+      lab.appendChild(inp); box.appendChild(lab);
+    })();
+    function setCatColor(hex) {
+      catColor = String(hex).toLowerCase();
+      var inPalette = false;
+      Array.prototype.forEach.call($("catSwatches").querySelectorAll("button.swatch"), function (b) {
+        var on = b.getAttribute("data-color") === catColor; if (on) inPalette = true;
+        b.classList.toggle("on", on); b.setAttribute("aria-checked", on ? "true" : "false");
+      });
+      var cust = $("swCustom");
+      cust.classList.toggle("on", !inPalette);
+      if (inPalette) cust.style.removeProperty("--sw"); else cust.style.setProperty("--sw", catColor);
+      $("cat-color-custom").value = catColor;
+    }
+
     function startEditCat(cid) {
       var c = catMap[cid]; if (!c) return;
       editingCatId = cid;
@@ -617,6 +721,7 @@
       else { $("cat-groupe").value = "__custom"; $("customGroupeField").hidden = false; $("cat-groupe-custom").value = c.groupe; }
       if (UNITS.indexOf(c.unite) >= 0) { $("cat-unite").value = c.unite; $("customUnitField").hidden = true; }
       else { $("cat-unite").value = "__custom"; $("customUnitField").hidden = false; $("cat-unite-custom").value = c.unite; }
+      setCatColor(isHex(c.color) ? c.color : nextFreeColor());
       $("catFormTitle").textContent = "MODIFIER L'EXERCICE";
       $("catSubmitBtn").textContent = "ENREGISTRER";
       $("cancelCatEdit").hidden = false;
@@ -627,6 +732,7 @@
       $("cat-name").value = ""; $("cat-groupe").value = GROUPS[0]; $("cat-unite").value = "kg";
       $("cat-groupe-custom").value = ""; $("cat-unite-custom").value = "";
       $("customGroupeField").hidden = true; $("customUnitField").hidden = true;
+      setCatColor(nextFreeColor());
       $("catFormTitle").textContent = "AJOUTER UN EXERCICE";
       $("catSubmitBtn").textContent = "CRÉER L'EXERCICE";
       $("cancelCatEdit").hidden = true;
@@ -639,18 +745,18 @@
       var groupe = $("cat-groupe").value; if (groupe === "__custom") groupe = ($("cat-groupe-custom").value.trim() || "Autre");
       var unite = $("cat-unite").value; if (unite === "__custom") unite = ($("cat-unite-custom").value.trim() || "kg");
       if (editingCatId) {
-        var c = catMap[editingCatId]; c.name = name; c.groupe = groupe; c.unite = unite;
+        var c = catMap[editingCatId]; c.name = name; c.groupe = groupe; c.unite = unite; c.color = catColor;
         data.entries.forEach(function (x) { if (x.exId === editingCatId) { x.name = name; x.groupe = groupe; x.unite = unite; } });
         rebuildCatMap(); save(); cancelCatEdit(); renderAll(); toast("Exercice modifié ✓");
       } else {
-        var nc = { id: id(), name: name, groupe: groupe, unite: unite };
+        var nc = { id: id(), name: name, groupe: groupe, unite: unite, color: catColor };
         data.catalog.push(nc); rebuildCatMap(); save(); cancelCatEdit(); renderAll();
         $("f-ex").value = nc.id; onExChange(); toast("Exercice créé ✓");
       }
     });
 
     // ---------- Rendus ----------
-    function renderAll() { renderExSelect(); renderCatalog(); renderList(); renderChartSelect(); if (!$("panel-calendrier").hidden) renderCalendar(); }
+    function renderAll() { renderExSelect(); renderCatalog(); renderList(); if (!$("panel-courbes").hidden) renderCharts(); if (!$("panel-calendrier").hidden) renderCalendar(); }
 
     function renderExSelect() {
       var sel = $("f-ex"); var prev = sel.value; sel.innerHTML = "";
@@ -661,12 +767,11 @@
     }
 
     function entryRow(e, afterChange) {
-      var color = groupColors[e.groupe] || accent();
-      var li = document.createElement("li"); li.className = "row";
+      var li = document.createElement("li"); li.className = "row ex"; li.style.setProperty("--ex", exColor(e.exId));
       var left = document.createElement("div");
       var volume = e.series + " série" + (e.series > 1 ? "s" : "");
       if (e.reps > 0) volume += " × <span class='num'>" + e.reps + "</span> rép";
-      left.innerHTML = '<div class="title">' + esc(e.name) + '</div><div class="meta"><span class="pill" style="background:' + softBg(color) + ';color:' + color + '">' + esc(e.groupe) + '</span>' + frDate(e.date) + ' · ' + volume + '</div>';
+      left.innerHTML = '<div class="title">' + esc(e.name) + '</div><div class="meta"><span class="pill">' + esc(e.groupe) + '</span>' + frDate(e.date) + ' · ' + volume + '</div>';
       var right = document.createElement("div"); right.className = "right";
       var val = document.createElement("div"); val.className = "val"; val.textContent = fmtNum(e.valeur) + " " + e.unite;
       var edit = document.createElement("button"); edit.className = "iconbtn"; edit.setAttribute("aria-label", "Modifier");
@@ -700,10 +805,9 @@
       $("catEmpty").hidden = data.catalog.length > 0;
       data.catalog.slice().sort(byName).forEach(function (c) {
         var count = data.entries.filter(function (e) { return e.exId === c.id; }).length;
-        var color = groupColors[c.groupe] || accent();
-        var li = document.createElement("li"); li.className = "row";
+        var li = document.createElement("li"); li.className = "row ex"; li.style.setProperty("--ex", exColor(c.id));
         var left = document.createElement("div");
-        left.innerHTML = '<div class="title">' + esc(c.name) + '</div><div class="meta"><span class="pill" style="background:' + softBg(color) + ';color:' + color + '">' + esc(c.groupe) + '</span>unité <span class="num">' + esc(c.unite) + '</span> · <span class="num">' + count + '</span> séance' + (count > 1 ? 's' : '') + '</div>';
+        left.innerHTML = '<div class="title">' + esc(c.name) + '</div><div class="meta"><span class="pill">' + esc(c.groupe) + '</span>unité <span class="num">' + esc(c.unite) + '</span> · <span class="num">' + count + '</span> séance' + (count > 1 ? 's' : '') + '</div>';
         var right = document.createElement("div"); right.className = "right";
         var edit = document.createElement("button"); edit.className = "iconbtn"; edit.setAttribute("aria-label", "Modifier");
         edit.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>';
@@ -765,31 +869,166 @@
     function closeDay() { $("cal-day").hidden = true; $("cal-month").hidden = false; renderCalendar(); }
 
     // ---------- Courbes ----------
-    function renderChartSelect() {
-      var sel = $("chartSel"); var prev = sel.value;
-      var ids = usedExerciseIds().map(function (i) { return catMap[i]; }).filter(Boolean).sort(byName);
-      sel.innerHTML = "";
-      if (!ids.length) { var o = document.createElement("option"); o.textContent = "—"; sel.appendChild(o); renderChart(); return; }
-      ids.forEach(function (c) { var o = document.createElement("option"); o.value = c.id; o.textContent = c.name; sel.appendChild(o); });
-      sel.value = (prev && catMap[prev] && ids.indexOf(catMap[prev]) >= 0) ? prev : ids[0].id;
-      renderChart();
+    // Réglages d'affichage, propres à l'appareil : ordre choisi, courbes masquées, ordre personnalisé
+    var SORTS = { az: "A-Z", recent: "Récent", custom: "Perso" };
+    var chartPrefs = (function () {
+      var p = loadRaw(CHARTS_KEY) || {};
+      return {
+        sort: Object.prototype.hasOwnProperty.call(SORTS, p.sort) ? p.sort : "az",
+        hidden: Array.isArray(p.hidden) ? p.hidden : [],
+        order: Array.isArray(p.order) ? p.order : []
+      };
+    })();
+    function saveChartPrefs() { try { localStorage.setItem(CHARTS_KEY, JSON.stringify(chartPrefs)); } catch (e) {} }
+    var chartUid = 0;
+
+    // Une série par exercice ayant des séances : la meilleure valeur de chaque date
+    function chartSeries() {
+      var byEx = {}, list = [];
+      data.entries.forEach(function (e) {
+        var c = catMap[e.exId]; if (!c) return;
+        var s = byEx[c.id];
+        if (!s) { s = byEx[c.id] = { c: c, best: {} }; list.push(s); }
+        if (s.best[e.date] === undefined || e.valeur > s.best[e.date]) s.best[e.date] = e.valeur;
+      });
+      list.forEach(function (s) { s.pts = Object.keys(s.best).sort().map(function (d) { return { date: d, v: s.best[d] }; }); });
+      return list;
     }
-    $("chartSel").addEventListener("change", renderChart);
+    function lastDate(s) { return s.pts[s.pts.length - 1].date; }
+    // L'ordre personnalisé garde les exercices déjà placés et ajoute les nouveaux à la fin (A-Z)
+    function syncOrder(list) {
+      var present = {}, seen = {};
+      list.forEach(function (s) { present[s.c.id] = 1; });
+      var order = chartPrefs.order.filter(function (i) { if (!present[i] || seen[i]) return false; seen[i] = 1; return true; });
+      list.slice().sort(function (a, b) { return byName(a.c, b.c); }).forEach(function (s) { if (!seen[s.c.id]) order.push(s.c.id); });
+      chartPrefs.order = order;
+    }
+    function sortSeries(list) {
+      var mode = chartPrefs.sort;
+      if (mode === "custom") {
+        syncOrder(list);
+        var rank = {}; chartPrefs.order.forEach(function (i, n) { rank[i] = n; });
+        return list.sort(function (a, b) { return rank[a.c.id] - rank[b.c.id]; });
+      }
+      return list.sort(function (a, b) {
+        if (mode === "recent" && lastDate(a) !== lastDate(b)) return lastDate(a) < lastDate(b) ? 1 : -1;
+        return byName(a.c, b.c);
+      });
+    }
+    function hiddenSet() { var h = {}; chartPrefs.hidden.forEach(function (i) { h[i] = 1; }); return h; }
 
-    function renderChart() {
-      var area = $("chartArea"), metric = $("chartMetric");
-      area.innerHTML = ""; metric.innerHTML = "";
-      var c = catMap[$("chartSel").value];
-      if (!c) { area.innerHTML = '<div class="empty">Ajoute des séances pour voir la courbe.</div>'; return; }
-      var byDate = {};
-      data.entries.forEach(function (e) { if (e.exId !== c.id) return; if (byDate[e.date] === undefined || e.valeur > byDate[e.date]) byDate[e.date] = e.valeur; });
-      var dates = Object.keys(byDate).sort();
-      var pts = dates.map(function (d) { return { date: d, v: byDate[d] }; });
-      if (!pts.length) { area.innerHTML = '<div class="empty">Pas encore de donnée pour cet exercice.</div>'; return; }
-      var last = pts[pts.length - 1].v, first = pts[0].v, diff = last - first;
-      metric.innerHTML = 'Meilleure valeur par séance · actuel <b>' + fmtNum(last) + ' ' + esc(c.unite) + '</b>' + (pts.length > 1 ? ' · évolution <b style="color:' + (diff >= 0 ? "var(--good)" : "var(--danger)") + '">' + (diff > 0 ? "+" : "") + fmtNum(diff) + ' ' + esc(c.unite) + '</b>' : '');
+    function renderCharts() { var list = sortSeries(chartSeries()); renderChartPanels(list); renderChartCards(list); }
 
-      var col = accent();
+    function renderChartCards(list) {
+      var hidden = hiddenSet();
+      var shown = list.filter(function (s) { return !hidden[s.c.id]; });
+      $("chartFilterBtn").textContent = "Filtrer · " + shown.length + "/" + list.length;
+      $("chartFilterBtn").setAttribute("aria-label", "Filtrer les courbes, " + shown.length + " affichée" + (shown.length > 1 ? "s" : "") + " sur " + list.length);
+      $("chartSortBtn").textContent = "Trier · " + SORTS[chartPrefs.sort];
+      var box = $("chartList"); box.innerHTML = ""; chartUid = 0;
+      if (!shown.length) {
+        box.innerHTML = '<section class="card"><div class="empty">' + (list.length ? "Toutes les courbes sont masquées. Touche « Filtrer » pour en afficher." : "Ajoute des séances pour voir les courbes.") + '</div></section>';
+        return;
+      }
+      shown.forEach(function (s) { box.appendChild(chartCard(s)); });
+    }
+
+    function chartCard(s) {
+      var c = s.c, pts = s.pts, col = exColor(c.id), u = esc(c.unite);
+      var last = pts[pts.length - 1].v, diff = last - pts[0].v;
+      var metric = 'actuel <b>' + fmtNum(last) + ' ' + u + '</b>';
+      if (pts.length > 1) metric += ' · évolution <b style="color:' + (diff >= 0 ? "var(--good)" : "var(--danger)") + '">' + (diff > 0 ? "+" : "") + fmtNum(diff) + ' ' + u + '</b>';
+      metric += ' · <b>' + pts.length + '</b> séance' + (pts.length > 1 ? "s" : "");
+      var sec = document.createElement("section"); sec.className = "card"; sec.style.setProperty("--ex", col);
+      sec.innerHTML = '<div class="chart-title"><span class="exdot"></span><h3>' + esc(c.name) + '</h3><span class="pill">' + esc(c.groupe) + '</span></div>' +
+        '<div class="chart-metric">' + metric + '</div>' + chartSvg(c, pts, col);
+      return sec;
+    }
+
+    // Panneaux Filtrer / Trier : un seul ouvert à la fois, sous l'en-tête de la carte
+    function togglePanel(panelId) {
+      [["chartFilterBtn", "chartFilterPanel"], ["chartSortBtn", "chartSortPanel"]].forEach(function (p) {
+        var open = p[1] === panelId && $(p[1]).hidden;
+        $(p[1]).hidden = !open; $(p[0]).setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    }
+    $("chartFilterBtn").addEventListener("click", function () { togglePanel("chartFilterPanel"); });
+    $("chartSortBtn").addEventListener("click", function () { togglePanel("chartSortPanel"); });
+
+    function renderChartPanels(list) {
+      var hidden = hiddenSet();
+      var fl = $("chartFilterList"); fl.innerHTML = "";
+      $("filterAll").hidden = $("filterNone").hidden = !list.length;
+      if (!list.length) fl.innerHTML = '<li class="empty">Aucune courbe pour l\'instant.</li>';
+      list.forEach(function (s) {
+        var li = document.createElement("li");
+        var lab = document.createElement("label"); lab.className = "opt-row"; lab.style.setProperty("--ex", exColor(s.c.id));
+        var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !hidden[s.c.id];
+        cb.addEventListener("change", function () { setHidden([s.c.id], !cb.checked); });
+        lab.appendChild(cb);
+        lab.insertAdjacentHTML("beforeend", '<span class="exdot"></span><span class="opt-name">' + esc(s.c.name) + '</span><span class="opt-sub">' + esc(s.c.groupe) + '</span>');
+        li.appendChild(lab); fl.appendChild(li);
+      });
+
+      Array.prototype.forEach.call($("chartSortPanel").querySelectorAll(".seg button"), function (b) {
+        b.setAttribute("aria-checked", b.getAttribute("data-sort") === chartPrefs.sort ? "true" : "false");
+      });
+      var ol = $("chartOrderList"); ol.innerHTML = "";
+      ol.hidden = chartPrefs.sort !== "custom";
+      if (ol.hidden) return;
+      list.forEach(function (s, i) {
+        var li = document.createElement("li"); li.className = "opt-row order-row" + (hidden[s.c.id] ? " dim" : "");
+        li.style.setProperty("--ex", exColor(s.c.id));
+        li.innerHTML = '<span class="exdot"></span><span class="opt-name">' + esc(s.c.name) + '</span>';
+        [["up", -1, "Monter", "M6 15l6-6 6 6"], ["down", 1, "Descendre", "M6 9l6 6 6-6"]].forEach(function (m) {
+          var b = document.createElement("button"); b.type = "button"; b.className = "mini-btn";
+          b.setAttribute("data-move", m[0]); b.setAttribute("data-id", s.c.id);
+          b.setAttribute("aria-label", m[2] + " " + s.c.name);
+          b.disabled = (m[1] < 0 && i === 0) || (m[1] > 0 && i === list.length - 1);
+          b.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + m[3] + '"></path></svg>';
+          b.addEventListener("click", function () { moveChart(s.c.id, m[1], m[0]); });
+          li.appendChild(b);
+        });
+        ol.appendChild(li);
+      });
+    }
+
+    function setHidden(ids, hide) {
+      var h = chartPrefs.hidden.filter(function (i) { return ids.indexOf(i) < 0; });
+      chartPrefs.hidden = hide ? h.concat(ids) : h;
+      saveChartPrefs();
+      renderChartCards(sortSeries(chartSeries()));   // la liste des cases reste en place (focus conservé)
+    }
+    $("filterAll").addEventListener("click", function () { chartPrefs.hidden = []; saveChartPrefs(); renderCharts(); });
+    $("filterNone").addEventListener("click", function () {
+      chartPrefs.hidden = chartSeries().map(function (s) { return s.c.id; }); saveChartPrefs(); renderCharts();
+    });
+
+    Array.prototype.forEach.call($("chartSortPanel").querySelectorAll(".seg button"), function (b) {
+      b.addEventListener("click", function () {
+        var mode = b.getAttribute("data-sort"); if (mode === chartPrefs.sort) return;
+        // Premier passage en personnalisé : on part de l'ordre affiché à cet instant
+        if (mode === "custom" && !chartPrefs.order.length) chartPrefs.order = sortSeries(chartSeries()).map(function (s) { return s.c.id; });
+        chartPrefs.sort = mode; saveChartPrefs(); renderCharts();
+      });
+    });
+
+    function moveChart(cid, delta, dir) {
+      var o = chartPrefs.order, i = o.indexOf(cid), j = i + delta;
+      if (i < 0 || j < 0 || j >= o.length) return;
+      o[i] = o[j]; o[j] = cid; saveChartPrefs(); renderCharts();
+      // Le focus reste sur la flèche utilisée, pour enchaîner les déplacements
+      var btns = $("chartOrderList").querySelectorAll("button"), same = null, other = null;
+      Array.prototype.forEach.call(btns, function (b) {
+        if (b.getAttribute("data-id") !== cid) return;
+        if (b.getAttribute("data-move") === dir) same = b; else other = b;
+      });
+      var target = (same && !same.disabled) ? same : other;
+      if (target) target.focus();
+    }
+
+    function chartSvg(c, pts, col) {
+      var gid = "mcFill" + (++chartUid);   // un dégradé par courbe : les id SVG sont partagés par toute la page
       var W = 600, H = 300, padL = 50, padR = 16, padT = 18, padB = 34;
       var plotW = W - padL - padR, plotH = H - padT - padB;
       var vals = pts.map(function (p) { return p.v; });
@@ -800,7 +1039,7 @@
       function y(v) { return padT + (1 - (v - minV) / (maxV - minV)) * plotH; }
       var muted = "#a3a3a3", lineC = "#2b2b2e", surf = "#1a1a1c";
       var svg = ['<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Évolution de ' + esc(c.name) + '">'];
-      svg.push('<defs><linearGradient id="mcFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".35"></stop><stop offset="1" stop-color="' + col + '" stop-opacity="0"></stop></linearGradient></defs>');
+      svg.push('<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".35"></stop><stop offset="1" stop-color="' + col + '" stop-opacity="0"></stop></linearGradient></defs>');
       var ticks = 4;
       for (var t = 0; t <= ticks; t++) {
         var gv = minV + (t / ticks) * (maxV - minV), yy = y(gv);
@@ -813,7 +1052,7 @@
         var line = 'M' + x(0).toFixed(1) + ',' + y(pts[0].v).toFixed(1);
         for (var i = 1; i < pts.length; i++) line += ' L' + x(i).toFixed(1) + ',' + y(pts[i].v).toFixed(1);
         var ar = line + ' L' + x(pts.length - 1).toFixed(1) + ',' + (padT + plotH).toFixed(1) + ' L' + x(0).toFixed(1) + ',' + (padT + plotH).toFixed(1) + ' Z';
-        svg.push('<path d="' + ar + '" fill="url(#mcFill)"></path>');
+        svg.push('<path d="' + ar + '" fill="url(#' + gid + ')"></path>');
         svg.push('<path d="' + line + '" fill="none" stroke="' + col + '" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" style="filter: drop-shadow(0 0 5px ' + col + 'aa)"></path>');
       }
       pts.forEach(function (p, i) {
@@ -822,7 +1061,7 @@
         if (isLast) { var ly = y(p.v) - 12; if (ly < padT + 6) ly = y(p.v) + 20; svg.push('<text x="' + x(i).toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="middle" font-size="14" font-weight="700" font-family="Inter, sans-serif" fill="' + col + '">' + fmtNum(p.v) + '</text>'); }
       });
       svg.push('</svg>');
-      area.innerHTML = svg.join("");
+      return svg.join("");
     }
 
     // ---------- Init ----------

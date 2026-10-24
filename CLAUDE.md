@@ -2,7 +2,7 @@
 
 Appli web (PWA) de suivi de musculation, installée sur iPhone depuis l'écran d'accueil, hébergée sur **GitHub Pages**. Ce fichier contient tout le nécessaire pour continuer à la faire évoluer depuis n'importe quel compte Claude / session Claude Code. Dans Claude Code, ce fichier (`CLAUDE.md`) est lu automatiquement ; ailleurs, colle-le en début de conversation.
 
-Langue de l'interface : **français**. Version actuelle : **1.1.0**.
+Langue de l'interface : **français**. Version actuelle : **1.2.0**.
 
 ---
 
@@ -12,12 +12,12 @@ Saisir ses séances de musculation et suivre sa progression. 4 onglets (barre de
 
 - **Séance** : formulaire de saisie (date, exercice, charge sur un disque avec +/−, séries, répétitions, commentaire) + historique. Éditer ✏️ ou supprimer 🗑️ chaque séance.
 - **Calendrier** : vue par mois (lundi en premier). Les jours avec séance sont en rouge avec le nombre de séances. Toucher un jour → détail de la journée + bouton Retour.
-- **Courbes** : évolution de la meilleure valeur par séance pour un exercice (courbe lumineuse rouge).
-- **Exercices** : catalogue. Chaque exercice a un **groupe de muscle** et une **unité** propres. Créer, éditer (se répercute sur les séances liées), supprimer.
+- **Courbes** : **toutes** les courbes à la fois, une carte par exercice ayant des séances (meilleure valeur par séance, courbe lumineuse à la couleur de l'exercice). Bouton **Filtrer** (cases à cocher, Tout afficher / Tout masquer) et bouton **Trier** (A-Z, Récent = dernière séance d'abord, Personnalisé = ordre réglé avec des flèches). Les deux panneaux s'ouvrent dans la carte d'en-tête, un seul à la fois.
+- **Exercices** : catalogue. Chaque exercice a un **groupe de muscle**, une **unité** et une **couleur** propres (11 pastilles + une couleur libre via le sélecteur natif). Créer, éditer (se répercute sur les séances liées), supprimer.
 
 Particularités métier :
 - L'unité dépend de l'exercice : `kg`, `%`, `min`, `s`, `km`, `niv`, ou libre. Les valeurs **négatives** sont permises (ex. tractions assistées −27 kg).
-- Groupe de muscle : liste prédéfinie + option « Autre… » qui ouvre un champ texte libre.
+- Groupe de muscle : liste prédéfinie + option « Autre… » qui ouvre un champ texte libre. **Depuis la 1.2.0, le groupe n'a plus de couleur** (pastille grise) : la couleur appartient à l'exercice.
 - Une séance = un bloc complet (on saisit le nombre de séries d'un coup, pas série par série).
 - La courbe prend la **meilleure valeur par date** (= plus haute, donc progression même pour l'assistance qui remonte vers 0).
 
@@ -57,18 +57,20 @@ Déploiement = **écraser les fichiers** (pas une release). Une release seule ne
 
 ## 4. Données (localStorage, sur l'appareil)
 
-Clé : **`suivi-muscu-v2`**. Ne **jamais** changer cette clé sans écrire une migration : ça effacerait l'historique des utilisateurs. (Il existe déjà une migration `v1` → `v2`.) Autre clé : `musclor-tab` (dernier onglet ouvert).
+Clé : **`suivi-muscu-v2`**. Ne **jamais** changer cette clé sans écrire une migration : ça effacerait l'historique des utilisateurs. (Il existe déjà une migration `v1` → `v2`.) Autres clés, propres à l'appareil et hors sauvegarde : `musclor-tab` (dernier onglet ouvert) et `musclor-courbes` (`{ sort: "az"|"recent"|"custom", hidden: [exId], order: [exId] }`).
 
 ```js
 data = {
-  catalog: [ { id, name, groupe, unite } ],
+  catalog: [ { id, name, groupe, unite, color:"#rrggbb" } ],
   entries: [ { id, date:"YYYY-MM-DD", exId, name, groupe, unite,
                series:Number, reps:Number, valeur:Number, comment:String } ],
   seeded: Boolean   // true tant que ce sont les données d'exemple
 }
 ```
 
-`entries` dénormalise `name/groupe/unite` (copie au moment de la saisie) pour que l'historique survive à la suppression/édition d'un exercice du catalogue ; éditer un exercice répercute ces champs sur ses séances. `exId` relie une séance à son exercice.
+`entries` dénormalise `name/groupe/unite` (copie au moment de la saisie) pour que l'historique survive à la suppression/édition d'un exercice du catalogue ; éditer un exercice répercute ces champs sur ses séances. `exId` relie une séance à son exercice. La **couleur n'est pas dénormalisée** : elle se lit dans le catalogue (`exColor(exId)`, rouge par défaut).
+
+Migration des couleurs (`ensureColors`, au chargement et à l'import) : un exercice sans `color` reprend l'ancienne couleur de son groupe (`LEGACY_GROUP_COLORS`, celles d'avant la 1.2.0), sinon la première couleur libre de `PALETTE`.
 
 **Sauvegarde** : boutons Exporter/Importer (JSON = l'objet `data` entier). Les données sont **par appareil**, jamais synchronisées (pas de serveur). `navigator.storage.persist()` est demandé pour limiter les purges.
 
@@ -86,6 +88,8 @@ Appli **100 % sombre** (pas de thème clair). Tokens CSS dans `:root` de `index.
 
 Typo : **Anton** (titres/chiffres, `--font-disp`), **Inter** (corps, `--font-ui`). Composants maison : disque de charge avec boutons +/−, cartes-steppers séries/réps, barre de navigation basse à 4 icônes, grille de calendrier, courbe SVG lumineuse (dégradé + `drop-shadow`). Cibles tactiles ≥ 44 px.
 
+Couleur d'exercice : variable CSS `--ex` posée sur l'élément ; elle donne le liseré gauche des lignes (`li.row.ex`), la pastille `.exdot` et la couleur de la courbe. Plusieurs SVG coexistent sur la page Courbes : chaque dégradé a un `id` unique (`mcFill1`, `mcFill2`…), sinon toutes les courbes prendraient le premier.
+
 L'exploration de départ (4 directions : Iron, Néon, Disques, Tableau LED + le Mix retenu) est sur une **toile de design** Claude : https://claude.ai/artifact/Eef5MPUG8Gt6ELdBC2Ua1U — utile pour garder la cohérence ou repartir sur une autre direction.
 
 ---
@@ -100,7 +104,7 @@ L'exploration de départ (4 directions : Iron, Néon, Disques, Tableau LED + le 
 - Accessibilité : vrais `<button>`/`<label>`, `aria-label` sur les boutons-icônes.
 - Après **toute** modification destinée à être publiée : **bump `VERSION` dans `sw.js`** + `NOTES`.
 
-Test : le flux de mise à jour (service worker) ne se teste que sur un vrai serveur HTTPS / l'iPhone (bloqué dans les navigateurs intégrés). Le reste se vérifie en servant le dossier en local.
+Test : le flux de mise à jour (service worker) ne se teste que sur un vrai serveur HTTPS / l'iPhone (bloqué dans les navigateurs intégrés). Le reste se vérifie en servant le dossier en local, **en coupant `sw.js`** (réponse 404) : sinon le service worker sert l'`index.html` en cache et l'on teste l'ancienne version.
 
 ---
 
@@ -109,5 +113,6 @@ Test : le flux de mise à jour (service worker) ne se teste que sur un vrai serv
 - Synchronisation multi-appareils (nécessiterait un backend ou un stockage cloud).
 - Export CSV en plus du JSON.
 - Records (PR) et volume total par séance.
-- Filtre par groupe de muscle dans les courbes.
+- Filtre par groupe de muscle dans les courbes (le filtre actuel est par exercice).
+- Glisser-déposer pour l'ordre personnalisé des courbes (aujourd'hui : flèches ↑ ↓).
 - `CHANGELOG.md` pour historiser les versions.
