@@ -2,7 +2,7 @@
 
 Appli web (PWA) de suivi de musculation, installée sur iPhone depuis l'écran d'accueil, hébergée sur **GitHub Pages**. Ce fichier contient tout le nécessaire pour continuer à la faire évoluer depuis n'importe quel compte Claude / session Claude Code. Dans Claude Code, ce fichier (`CLAUDE.md`) est lu automatiquement ; ailleurs, colle-le en début de conversation.
 
-Langue de l'interface : **français**. Version actuelle : **1.2.0**.
+Langue de l'interface : **français**. Version actuelle : **1.3.0**.
 
 ---
 
@@ -10,10 +10,10 @@ Langue de l'interface : **français**. Version actuelle : **1.2.0**.
 
 Saisir ses séances de musculation et suivre sa progression. 4 onglets (barre de navigation en bas) :
 
-- **Séance** : formulaire de saisie (date, exercice, charge sur un disque avec +/−, séries, répétitions, commentaire) + historique. Sous le disque, le bouton **« Reprendre »** remplit charge, séries et répétitions avec la dernière séance de l'exercice. Badge **RECORD** sur une séance qui bat le meilleur résultat des dates précédentes du même exercice (`recordIds`, la toute première séance n'en a pas). Éditer ✏️ ou supprimer 🗑️ chaque séance : la suppression est **immédiate**, avec un message « Annuler » pendant 5 s (`toast(msg, undoFn)`) ; supprimer un exercice ou tout l'historique garde la confirmation.
-- **Calendrier** : vue par mois (lundi en premier). Les jours avec séance sont en rouge, avec un point par exercice fait ce jour-là à sa couleur (4 au plus). Toucher un jour → détail de la journée + bouton Retour.
+- **Séance** : formulaire de saisie (date, exercice, charge sur un disque avec +/−, séries, répétitions, commentaire) + historique. L'exercice se choisit dans une **liste maison** avec la pastille de couleur (A-Z) : la liste native d'iOS n'affiche pas de couleur, donc le `<select id="f-ex">` reste mais caché, comme simple porteur de la valeur (`onExChange` met le bouton à jour). Sous le disque, le bouton **« Reprendre »** remplit charge, séries et répétitions avec la dernière séance de l'exercice. Badge **RECORD** sur une séance qui bat le meilleur résultat des dates précédentes du même exercice (`recordIds`, la toute première séance n'en a pas). Éditer ✏️ ou supprimer 🗑️ chaque séance : la suppression est **immédiate**, avec un message « Annuler » pendant 5 s (`toast(msg, undoFn)`) ; supprimer un exercice ou tout l'historique garde la confirmation.
+- **Calendrier** : vue par mois (lundi en premier). Les jours avec séance sont en rouge, avec un point par exercice fait ce jour-là à sa couleur (4 au plus). Toucher un jour → détail de la journée + bouton Retour, avec un tri **A-Z / Chrono / Couleur** mémorisé pour toutes les dates. Chrono = ordre de saisie (l'`id` commence par l'horodatage en base 36) ; Couleur = ordre de la palette (`hueKey` : teinte, rouge en tête, gris à la fin).
 - **Courbes** : **toutes** les courbes à la fois, une carte par exercice ayant des séances (meilleure valeur par séance, courbe lumineuse à la couleur de l'exercice). Graduations rondes (`niceScale` : 6 au plus) ; toucher un point affiche « date · valeur », le toucher à nouveau la masque. Bouton **Filtrer** (cases à cocher, Tout afficher / Tout masquer) et bouton **Trier** (A-Z, Récent = dernière séance d'abord, Personnalisé = ordre réglé avec des flèches). Les deux panneaux s'ouvrent dans la carte d'en-tête, un seul à la fois.
-- **Exercices** : catalogue. Chaque exercice a un **groupe de muscle**, une **unité** et une **couleur** propres (11 pastilles + une couleur libre via le sélecteur natif). Créer, éditer (se répercute sur les séances liées), supprimer.
+- **Exercices** : catalogue. Chaque exercice a un **groupe de muscle**, une **unité** et une **couleur** propres (11 pastilles + une couleur libre via le sélecteur natif). Créer, éditer (se répercute sur les séances liées), supprimer. La liste « Mes exercices » est **triée par couleur** (`byColor`), puis par nom.
 
 Particularités métier :
 - L'unité dépend de l'exercice : `kg`, `%`, `min`, `s`, `km`, `niv`, ou libre. Les valeurs **négatives** sont permises (ex. tractions assistées −27 kg).
@@ -57,7 +57,7 @@ Déploiement = **écraser les fichiers** (pas une release). Une release seule ne
 
 ## 4. Données (localStorage, sur l'appareil)
 
-Clé : **`suivi-muscu-v2`**. Ne **jamais** changer cette clé sans écrire une migration : ça effacerait l'historique des utilisateurs. (Il existe déjà une migration `v1` → `v2`.) Autres clés, propres à l'appareil et hors sauvegarde : `musclor-tab` (dernier onglet ouvert) et `musclor-courbes` (`{ sort: "az"|"recent"|"custom", hidden: [exId], order: [exId] }`).
+Clé : **`suivi-muscu-v2`**. Ne **jamais** changer cette clé sans écrire une migration : ça effacerait l'historique des utilisateurs. (Il existe déjà une migration `v1` → `v2`.) Autres clés, propres à l'appareil et hors sauvegarde : `musclor-tab` (dernier onglet ouvert), `musclor-tri-jour` (`"az"|"chrono"|"color"`) et `musclor-courbes` (`{ sort: "az"|"recent"|"custom", hidden: [exId], order: [exId] }`).
 
 ```js
 data = {
@@ -91,6 +91,7 @@ Typo : **Anton** (titres/chiffres, `--font-disp`), **Inter** (corps, `--font-ui`
 Détails à respecter (1.2.0) :
 - Champs de saisie à **16 px minimum** : en dessous, l'iPhone zoome quand on les touche. Le disque et les compteurs gardent leurs gros chiffres (leurs règles passent après).
 - Boutons **enfoncés au toucher** (`button:active`). Safari iOS n'applique `:active` que si la page écoute `touchstart` : l'écouteur vide en tête du script est donc indispensable.
+- **Grilles : toujours `minmax(0, 1fr)`**, jamais `1fr` seul, et `padding: 0` sur les boutons qu'elles contiennent. Avec `1fr`, une case trop remplie élargit sa colonne : en 1.2.0, 4 points de couleur + la marge par défaut des boutons faisaient déborder le calendrier de 37 px et l'iPhone décalait toute la page.
 - `main` et `form` sont en colonne avec un écart (14 px entre cartes, 12 px entre champs) : pas de marges en ligne pour espacer.
 - Onglet actif : trait rouge lumineux au-dessus de l'icône. Date du jour au format « sam. 24 oct. » (`DAYS_SHORT`, `MONTHS_SHORT`).
 

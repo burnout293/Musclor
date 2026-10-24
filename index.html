@@ -83,6 +83,12 @@
   select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23a3a3a3' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px }
   input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent) }
   .ex-sub { font-weight: 600; font-size: 12px; color: var(--accent) }
+  /* Choix de l'exercice : bouton au look d'un champ + liste maison avec la pastille de couleur */
+  .ex-pick { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; padding: 12px 36px 12px 12px; background: var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23a3a3a3' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 12px center; border: 1px solid var(--line); border-radius: 12px; color: var(--fg); font-size: 16px; text-align: left; cursor: pointer }
+  .ex-pick[aria-expanded="true"] { border-color: var(--accent) }
+  .ex-pick-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  button.opt-row { width: 100%; color: var(--fg); font-size: 15px; text-align: left }
+  .opt-row[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent) }
 
   /* Disque de charge */
   .disc-row { display: flex; align-items: center; justify-content: center; gap: 16px }
@@ -139,15 +145,16 @@
   .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px }
   .cal-head .mname { font-family: var(--font-disp); font-size: 22px; letter-spacing: .03em; text-transform: capitalize }
   .cal-nav { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); font-size: 20px; cursor: pointer }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px }
+  /* minmax(0, 1fr) : une case trop remplie ne peut pas élargir sa colonne (sinon la page glisse sur le côté) */
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px }
   .cal-dow { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--muted); padding-bottom: 2px }
   .cal-cell { aspect-ratio: 1 / 1; border-radius: 10px; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; color: var(--muted) }
   .cal-cell.cur { color: var(--fg); background: var(--surface-2); border-color: var(--line) }
   .cal-cell.today { border-color: var(--accent) }
-  button.cal-cell { cursor: pointer; color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: var(--glow); flex-direction: column; gap: 3px; line-height: 1 }
+  button.cal-cell { cursor: pointer; color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: var(--glow); flex-direction: column; gap: 3px; line-height: 1; padding: 0; min-width: 0 }
   /* Un point par exercice fait ce jour-là, à sa couleur (cerclé de sombre pour rester visible sur le rouge) */
-  .cal-dots { display: flex; gap: 3px; justify-content: center }
-  .cal-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--d); box-shadow: 0 0 0 1.5px #3a0306 }
+  .cal-dots { display: flex; gap: 2px; justify-content: center; max-width: 100% }
+  .cal-dots i { width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--d); box-shadow: 0 0 0 1.5px #3a0306 }
   .day-head { display: flex; align-items: center; gap: 10px }
   .back-btn { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--line); color: var(--fg); border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: 14px; cursor: pointer }
   .day-title { font-family: var(--font-disp); font-size: 20px; letter-spacing: .03em; text-transform: capitalize }
@@ -172,8 +179,8 @@
   .opt-row.dim { opacity: .5 }
   .opt-row .mini-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0 }
   .opt-row .mini-btn:disabled { opacity: .3; cursor: default }
-  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px }
-  .seg button { min-height: 40px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-weight: 600; font-size: 13px; cursor: pointer }
+  .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px }
+  .seg button { min-height: 40px; min-width: 0; padding: 0 4px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-weight: 600; font-size: 13px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
   .seg button[aria-checked="true"] { background: var(--accent); color: #fff; box-shadow: var(--glow) }
   .chart-title { display: flex; align-items: center; gap: 10px; min-width: 0 }
   .chart-title h3 { margin: 0; min-width: 0; font-family: var(--font-disp); font-weight: 400; font-size: 19px; letter-spacing: .04em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
@@ -235,10 +242,15 @@
               <input type="date" id="f-date" required>
             </div>
             <div class="field">
-              <label class="lbl" for="f-ex">Exercice</label>
-              <select id="f-ex" required></select>
+              <span class="lbl" id="f-ex-lbl">Exercice</span>
+              <!-- Le select caché garde la valeur ; la liste native d'iOS n'affiche pas de couleur -->
+              <select id="f-ex" hidden aria-hidden="true" tabindex="-1"></select>
+              <button type="button" class="ex-pick" id="exPick" aria-haspopup="listbox" aria-expanded="false" aria-controls="exList" aria-labelledby="f-ex-lbl exPickName">
+                <span class="exdot"></span><span class="ex-pick-name" id="exPickName">—</span>
+              </button>
             </div>
           </div>
+          <ul class="opt-list" id="exList" role="listbox" aria-labelledby="f-ex-lbl" hidden></ul>
           <div class="field" style="align-items: center; gap: 10px">
             <label class="lbl" id="f-charge-lbl" for="f-val" style="align-self: flex-start">Charge</label>
             <div class="disc-row">
@@ -309,6 +321,11 @@
         <div class="day-head">
           <button class="back-btn" id="dayBack"><span aria-hidden="true">‹</span> Retour</button>
           <span class="day-title" id="dayTitle">—</span>
+        </div>
+        <div class="seg" id="daySort" role="radiogroup" aria-label="Ordre des séances du jour">
+          <button type="button" role="radio" data-sort="az">A-Z</button>
+          <button type="button" role="radio" data-sort="chrono">Chrono</button>
+          <button type="button" role="radio" data-sort="color">Couleur</button>
         </div>
         <ul class="rows" id="dayList"></ul>
         <div id="dayEmpty" class="empty" hidden>Aucune séance ce jour-là.</div>
@@ -422,6 +439,7 @@
     var OLD_KEY = "suivi-muscu-v1";
     var TAB_KEY = "musclor-tab";
     var CHARTS_KEY = "musclor-courbes";
+    var DAY_SORT_KEY = "musclor-tri-jour";
     var $ = function (id) { return document.getElementById(id); };
 
     var GROUPS = ["Pectoraux","Dos","Épaules","Biceps","Triceps","Jambes","Fessiers","Mollets","Abdos","Avant-bras","Cardio"];
@@ -594,6 +612,17 @@
     function frLong(iso) { var p = String(iso).split("-"); return p.length === 3 ? (parseInt(p[2], 10) + " " + MONTHS[parseInt(p[1], 10) - 1] + " " + p[0]) : iso; }
     function exColor(exId) { var c = catMap[exId]; return (c && isHex(c.color)) ? c.color : accent(); }
     function byName(a, b) { return a.name.localeCompare(b.name, "fr"); }
+    // Ordre « couleur » : la teinte, rouge en tête comme dans la palette, les gris à la fin
+    function hueKey(hex) {
+      if (!isHex(hex)) return 999;
+      var r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255;
+      var max = Math.max(r, g, b), d = max - Math.min(r, g, b);
+      if (d < 0.08) return 500 + (1 - max);
+      var h = max === r ? ((g - b) / d) % 6 : (max === g ? (b - r) / d + 2 : (r - g) / d + 4);
+      h *= 60; if (h < 0) h += 360;
+      return (h + 15) % 360;   // le rouge (≈ 357°) passe devant l'orange
+    }
+    function byColor(a, b) { return (hueKey(a.color) - hueKey(b.color)) || byName(a, b); }
     function stepFor(unit) { return unit === "kg" ? 2.5 : (unit === "%" ? 0.5 : 1); }
     function curExUnit() { var c = catMap[$("f-ex").value]; return c ? c.unite : "kg"; }
 
@@ -614,6 +643,11 @@
     $("f-date").value = todayISO();
     function onExChange() {
       var c = catMap[$("f-ex").value];
+      $("exPick").style.setProperty("--ex", c ? exColor(c.id) : accent());
+      $("exPickName").textContent = c ? c.name : "—";
+      Array.prototype.forEach.call($("exList").querySelectorAll("[role=option]"), function (o) {
+        o.setAttribute("aria-selected", c && o.getAttribute("data-id") === c.id ? "true" : "false");
+      });
       $("f-unit").textContent = c ? c.unite.toUpperCase() : "KG";
       $("f-charge-lbl").textContent = c ? "Charge · " + c.groupe : "Charge";
       if (!editingEntryId) {
@@ -636,6 +670,8 @@
       return best;
     }
     $("f-ex").addEventListener("change", onExChange);
+    function setExListOpen(open) { $("exList").hidden = !open; $("exPick").setAttribute("aria-expanded", open ? "true" : "false"); }
+    $("exPick").addEventListener("click", function () { setExListOpen($("exList").hidden); });
 
     function startEditEntry(eid) {
       var e = data.entries.filter(function (x) { return x.id === eid; })[0]; if (!e) return;
@@ -805,8 +841,16 @@
     function renderAll() { renderExSelect(); renderCatalog(); renderList(); if (!$("panel-courbes").hidden) renderCharts(); if (!$("panel-calendrier").hidden) renderCalendar(); }
 
     function renderExSelect() {
-      var sel = $("f-ex"); var prev = sel.value; sel.innerHTML = "";
-      data.catalog.slice().sort(byName).forEach(function (c) { var o = document.createElement("option"); o.value = c.id; o.textContent = c.name + "  (" + c.unite + ")"; sel.appendChild(o); });
+      var sel = $("f-ex"), list = $("exList"); var prev = sel.value; sel.innerHTML = ""; list.innerHTML = "";
+      data.catalog.slice().sort(byName).forEach(function (c) {
+        var o = document.createElement("option"); o.value = c.id; o.textContent = c.name + "  (" + c.unite + ")"; sel.appendChild(o);
+        var li = document.createElement("li");
+        var b = document.createElement("button"); b.type = "button"; b.className = "opt-row"; b.setAttribute("role", "option"); b.setAttribute("data-id", c.id);
+        b.style.setProperty("--ex", exColor(c.id));
+        b.innerHTML = '<span class="exdot"></span><span class="opt-name">' + esc(c.name) + '</span><span class="opt-sub">' + esc(c.unite) + ' · ' + esc(c.groupe) + '</span>';
+        b.addEventListener("click", function () { sel.value = c.id; setExListOpen(false); onExChange(); $("exPick").focus(); });
+        li.appendChild(b); list.appendChild(li);
+      });
       var has = data.catalog.length > 0;
       $("noCatalog").hidden = has; $("form").hidden = !has;
       if (has) { if (prev && catMap[prev]) sel.value = prev; onExChange(); }
@@ -876,7 +920,7 @@
     function renderCatalog() {
       var ul = $("catList"); ul.innerHTML = "";
       $("catEmpty").hidden = data.catalog.length > 0;
-      data.catalog.slice().sort(byName).forEach(function (c) {
+      data.catalog.slice().sort(byColor).forEach(function (c) {
         var count = data.entries.filter(function (e) { return e.exId === c.id; }).length;
         var li = document.createElement("li"); li.className = "row ex"; li.style.setProperty("--ex", exColor(c.id));
         var left = document.createElement("div");
@@ -939,10 +983,29 @@
       }
     }
 
+    // Ordre des séances d'une journée, mémorisé pour toutes les dates : A-Z, chrono (ordre de saisie) ou couleur
+    var daySort = (function () { try { var s = localStorage.getItem(DAY_SORT_KEY); return s === "az" || s === "color" ? s : "chrono"; } catch (e) { return "chrono"; } })();
+    var openedDay = null;
+    function byEntryId(a, b) { return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0); }   // id = horodatage de saisie
+    function sortDay(list) {
+      if (daySort === "az") return list.sort(function (a, b) { return byName(a, b) || byEntryId(a, b); });
+      if (daySort === "color") return list.sort(function (a, b) { return (hueKey(exColor(a.exId)) - hueKey(exColor(b.exId))) || byName(a, b) || byEntryId(a, b); });
+      return list.sort(byEntryId);
+    }
+    Array.prototype.forEach.call($("daySort").querySelectorAll("button"), function (b) {
+      b.addEventListener("click", function () {
+        daySort = b.getAttribute("data-sort");
+        try { localStorage.setItem(DAY_SORT_KEY, daySort); } catch (e) {}
+        if (openedDay) openDay(openedDay);
+      });
+    });
+
     function openDay(iso) {
+      openedDay = iso;
       $("dayTitle").textContent = frLong(iso);
+      Array.prototype.forEach.call($("daySort").querySelectorAll("button"), function (b) { b.setAttribute("aria-checked", b.getAttribute("data-sort") === daySort ? "true" : "false"); });
       var ul = $("dayList"); ul.innerHTML = "";
-      var list = data.entries.filter(function (e) { return e.date === iso; }).sort(function (a, b) { return a.id < b.id ? 1 : -1; });
+      var list = sortDay(data.entries.filter(function (e) { return e.date === iso; }));
       $("dayEmpty").hidden = list.length > 0;
       var recs = recordIds();
       list.forEach(function (e) { ul.appendChild(entryRow(e, function () { if (!data.entries.filter(function (x) { return x.date === iso; }).length) closeDay(); else openDay(iso); }, recs[e.id])); });
