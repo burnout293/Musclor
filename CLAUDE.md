@@ -10,9 +10,9 @@ Langue de l'interface : **français**. Version actuelle : **1.2.0**.
 
 Saisir ses séances de musculation et suivre sa progression. 4 onglets (barre de navigation en bas) :
 
-- **Séance** : formulaire de saisie (date, exercice, charge sur un disque avec +/−, séries, répétitions, commentaire) + historique. Éditer ✏️ ou supprimer 🗑️ chaque séance.
-- **Calendrier** : vue par mois (lundi en premier). Les jours avec séance sont en rouge avec le nombre de séances. Toucher un jour → détail de la journée + bouton Retour.
-- **Courbes** : **toutes** les courbes à la fois, une carte par exercice ayant des séances (meilleure valeur par séance, courbe lumineuse à la couleur de l'exercice). Bouton **Filtrer** (cases à cocher, Tout afficher / Tout masquer) et bouton **Trier** (A-Z, Récent = dernière séance d'abord, Personnalisé = ordre réglé avec des flèches). Les deux panneaux s'ouvrent dans la carte d'en-tête, un seul à la fois.
+- **Séance** : formulaire de saisie (date, exercice, charge sur un disque avec +/−, séries, répétitions, commentaire) + historique. Sous le disque, le bouton **« Reprendre »** remplit charge, séries et répétitions avec la dernière séance de l'exercice. Badge **RECORD** sur une séance qui bat le meilleur résultat des dates précédentes du même exercice (`recordIds`, la toute première séance n'en a pas). Éditer ✏️ ou supprimer 🗑️ chaque séance : la suppression est **immédiate**, avec un message « Annuler » pendant 5 s (`toast(msg, undoFn)`) ; supprimer un exercice ou tout l'historique garde la confirmation.
+- **Calendrier** : vue par mois (lundi en premier). Les jours avec séance sont en rouge, avec un point par exercice fait ce jour-là à sa couleur (4 au plus). Toucher un jour → détail de la journée + bouton Retour.
+- **Courbes** : **toutes** les courbes à la fois, une carte par exercice ayant des séances (meilleure valeur par séance, courbe lumineuse à la couleur de l'exercice). Graduations rondes (`niceScale` : 6 au plus) ; toucher un point affiche « date · valeur », le toucher à nouveau la masque. Bouton **Filtrer** (cases à cocher, Tout afficher / Tout masquer) et bouton **Trier** (A-Z, Récent = dernière séance d'abord, Personnalisé = ordre réglé avec des flèches). Les deux panneaux s'ouvrent dans la carte d'en-tête, un seul à la fois.
 - **Exercices** : catalogue. Chaque exercice a un **groupe de muscle**, une **unité** et une **couleur** propres (11 pastilles + une couleur libre via le sélecteur natif). Créer, éditer (se répercute sur les séances liées), supprimer.
 
 Particularités métier :
@@ -88,6 +88,12 @@ Appli **100 % sombre** (pas de thème clair). Tokens CSS dans `:root` de `index.
 
 Typo : **Anton** (titres/chiffres, `--font-disp`), **Inter** (corps, `--font-ui`). Composants maison : disque de charge avec boutons +/−, cartes-steppers séries/réps, barre de navigation basse à 4 icônes, grille de calendrier, courbe SVG lumineuse (dégradé + `drop-shadow`). Cibles tactiles ≥ 44 px.
 
+Détails à respecter (1.2.0) :
+- Champs de saisie à **16 px minimum** : en dessous, l'iPhone zoome quand on les touche. Le disque et les compteurs gardent leurs gros chiffres (leurs règles passent après).
+- Boutons **enfoncés au toucher** (`button:active`). Safari iOS n'applique `:active` que si la page écoute `touchstart` : l'écouteur vide en tête du script est donc indispensable.
+- `main` et `form` sont en colonne avec un écart (14 px entre cartes, 12 px entre champs) : pas de marges en ligne pour espacer.
+- Onglet actif : trait rouge lumineux au-dessus de l'icône. Date du jour au format « sam. 24 oct. » (`DAYS_SHORT`, `MONTHS_SHORT`).
+
 Couleur d'exercice : variable CSS `--ex` posée sur l'élément ; elle donne le liseré gauche des lignes (`li.row.ex`), la pastille `.exdot` et la couleur de la courbe. Plusieurs SVG coexistent sur la page Courbes : chaque dégradé a un `id` unique (`mcFill1`, `mcFill2`…), sinon toutes les courbes prendraient le premier.
 
 L'exploration de départ (4 directions : Iron, Néon, Disques, Tableau LED + le Mix retenu) est sur une **toile de design** Claude : https://claude.ai/artifact/Eef5MPUG8Gt6ELdBC2Ua1U — utile pour garder la cohérence ou repartir sur une autre direction.
@@ -112,7 +118,8 @@ Test : le flux de mise à jour (service worker) ne se teste que sur un vrai serv
 
 - Synchronisation multi-appareils (nécessiterait un backend ou un stockage cloud).
 - Export CSV en plus du JSON.
-- Records (PR) et volume total par séance.
+- Volume total par séance (les records sont faits).
+- Historique compact : outils en icônes, volume écrit « 4 × 8 » (proposé en maquette M01, écarté le 24/10/2026).
 - Filtre par groupe de muscle dans les courbes (le filtre actuel est par exercice).
 - Glisser-déposer pour l'ordre personnalisé des courbes (aujourd'hui : flèches ↑ ↓).
 - `CHANGELOG.md` pour historiser les versions.
